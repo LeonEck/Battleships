@@ -6,4 +6,9 @@ $(document).ready(function () {
 		$("#gameContainer").show();
 	});
 
+	socket.on("gameIsAborted", function (data) {
+		$("#lobbyContainer").show();
+		$("#gameContainer").hide();
+	});
+
 });

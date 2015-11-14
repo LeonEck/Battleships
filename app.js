@@ -3,8 +3,9 @@ var express = require("express"),
 		server = require("http").createServer(app),
 		io = require("socket.io").listen(server)
 		server.listen(8000),
-		lobbyBuffer = [],
-		runningGames = new Map();
+		lobbyBuffer = "",
+		runningGames = new Map()
+		perPlayerInformation = new Map(); // Stores a players Socket.id and his gameId in the runningGames Map
 
 app.get('/', function (req, res) {
 	res.sendFile(__dirname + "/index.html");
@@ -14,20 +15,39 @@ app.use(express.static(__dirname + '/'));
 
 io.sockets.on("connection", function (socket) {
 
-	playerConnected(socket.id);
+	playerSearchingForGame(socket.id);
 
 	socket.on("disconnect", function () {
-		// TODO: Socketid aus dem LobbyBuffer entfernen
-		// TODO: Wenn der Spieler noch in einem Spiel ist, soll dieses geschlossen werden
+		if(socket.id === lobbyBuffer) {
+			// TODO: Wahrscheinlich doch wieder auf ein Array umsteigen
+			lobbyBuffer = "";
+		} else {
+			var gameId = perPlayerInformation.get(socket.id);
+			console.log("Clearing game: " + gameId);
+			var gameJsonInfo = runningGames.get(gameId);
+			console.log(gameJsonInfo);
+			io.sockets.to(gameJsonInfo.players.playerOne).emit("gameIsAborted", true);
+			io.sockets.to(gameJsonInfo.players.playerTwo).emit("gameIsAborted", true);
+			if(gameJsonInfo.players.playerOne === socket.id) {
+				playerSearchingForGame(gameJsonInfo.players.playerTwo);
+			} else {
+				playerSearchingForGame(gameJsonInfo.players.playerOne);
+			}
+			runningGames.delete(gameId);
+		}
 	});
 
 });
 
-function playerConnected (socketId) {
-	if (lobbyBuffer.length === 0) {
-		lobbyBuffer.push(socketId);
+function playerSearchingForGame (socketId) {
+	if (lobbyBuffer === "") {
+		lobbyBuffer = socketId;
 	} else {
-		createNewGame(socketId, lobbyBuffer.pop());
+		var gameId = createNewGame(socketId, lobbyBuffer);
+		console.log("Creating game: " + gameId);
+		perPlayerInformation.set(socketId, gameId);
+		perPlayerInformation.set(lobbyBuffer, gameId);
+		lobbyBuffer = "";
 	}
 }
 
@@ -41,6 +61,8 @@ function createNewGame (playerOneId, playerTwoId) {
 	);
 	informPlayerAboutGameStart(playerOneId, playerTwoId);
 	informPlayerAboutGameStart(playerTwoId, playerOneId);
+
+	return runningGames.size - 1;
 }
 
 function informPlayerAboutGameStart (playerId, opponentId) {
