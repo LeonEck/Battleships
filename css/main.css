@@ -10,24 +10,29 @@ html, body {
 	height: 50%;
 }
 
-.fill {
-	height: 100%
-}
-
-.gameField {
+#gameContainer .fill {
 	height: 100%;
-	line-height: 0;
 }
 
-.gameFieldRow {
-	height: 10%;
+#gameContainer .gameField {
+	height: 100%;
+}
+
+#gameContainer table {
+	height: 100%;
 	width: 100%;
+	text-align: center;
 }
 
-.gameFieldSquare {
-	display: inline-block;
-	height: 100%;
-	width: 10%;
+#gameContainer table td {
+	width: 9%;
+}
+
+#gameContainer .gameFieldHeaderSquare {
+	outline:1px solid black;
+}
+
+#gameContainer .gameFieldSquare {
 	background-color: blue;
 	outline:1px solid black;
 }
