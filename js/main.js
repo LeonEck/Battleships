@@ -13,6 +13,15 @@ $(document).ready(function () {
 		$("#gameContainer").hide();
 	});
 
+	socket.on("gameField", function (data) {
+		var gameFieldArray = data.split(", ");
+		for(var i = 0; i < gameFieldArray.length; i++) {
+			if(gameFieldArray[i] === "x") {
+				$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
+			}
+		}
+	});
+
 });
 
 function generateGameFields () {
@@ -22,10 +31,12 @@ function generateGameFields () {
 		gameFieldHtml += "<td class='gameFieldHeaderSquare'>" + i + "</td>";
 	}
 	gameFieldHtml += "</tr>"
+	var squareCount = 0;
 	for(var i = 0; i < 10; i++) {
 		gameFieldHtml += "<tr><td class='gameFieldHeaderSquare'>" + characters[i] + "</td>";
 		for(var j = 0; j < 10; j++) {
-			gameFieldHtml += "<td class='gameFieldSquare'></td>";
+			gameFieldHtml += "<td class='gameFieldSquare' squareNumber='" + squareCount + "'></td>";
+			squareCount++;
 		}
 		gameFieldHtml += "</tr>";
 	}

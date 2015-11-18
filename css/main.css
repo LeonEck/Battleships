@@ -36,3 +36,9 @@ html, body {
 	background-color: blue;
 	outline:1px solid black;
 }
+
+#gameContainer .shipPart {
+	z-index: 2;
+	background-color: black;
+	outline:1px solid white;
+}

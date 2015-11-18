@@ -56,11 +56,19 @@ function createNewGame (playerOneId, playerTwoId) {
 		{ "players": {
 				"playerOne": playerOneId,
 				"playerTwo": playerTwoId
+			},
+			"gameFields": {
+				"playerOne": predefinedGameFields.one,
+				"playerTwo": predefinedGameFields.one
 			}
 		}
 	);
+
 	informPlayerAboutGameStart(playerOneId, playerTwoId);
 	informPlayerAboutGameStart(playerTwoId, playerOneId);
+
+	io.sockets.to(playerOneId).emit("gameField", runningGames.get(runningGames.size - 1).gameFields.playerOne);
+	io.sockets.to(playerTwoId).emit("gameField", runningGames.get(runningGames.size - 1).gameFields.playerTwo);
 
 	return runningGames.size - 1;
 }
@@ -68,3 +76,16 @@ function createNewGame (playerOneId, playerTwoId) {
 function informPlayerAboutGameStart (playerId, opponentId) {
 	io.sockets.to(playerId).emit("gameIsStarting", true);
 }
+
+var predefinedGameFields = {
+	"one": "x, x, x, x, x, o, o, o, o, o, o, o, o, o, o, o, o, x, x, x, x, o, o, o, o, x, o, o, o, o, x, o, x, x, o, x, o, o, o, o, o, o, o, o, o, o, o, x, x, x, x, o, o, x, x, x, o, o, o, o, x, o, o, o, o, o, o, o, o, o, o, o, o, x, x, x, x, o, o, o, o, o, o, o, o, o, o, o, o, o, x, x, x, x, o, o, o, o, o, o"
+};
+
+
+
+
+
+
+
+
+
