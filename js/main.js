@@ -14,12 +14,27 @@ $(document).ready(function () {
 	});
 
 	socket.on("gameField", function (data) {
-		var gameFieldArray = data.split(", ");
-		for(var i = 0; i < gameFieldArray.length; i++) {
-			if(gameFieldArray[i] === "x") {
+		$(".shipPart").removeClass("shipPart");
+		for(var i = 0; i < data.length; i++) {
+			if(data[i] === "x") {
 				$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
 			}
 		}
+	});
+
+	socket.on("isItMyTurn", function (data) {
+		if(data) {
+			$("#myTitle").addClass("textRed");
+			$("#opponentTitle").removeClass("textRed");
+		} else {
+			$("#myTitle").removeClass("textRed");
+			$("#opponentTitle").addClass("textRed");
+		}
+	});
+	
+	$(document).on("click", "#opponentGameField .gameFieldSquare", function () {
+		//console.log($(this).attr("squareNumber"));
+		socket.emit("clickOnOpponentGameField", $(this).attr("squareNumber"));
 	});
 
 });
