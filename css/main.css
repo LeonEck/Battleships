@@ -51,3 +51,22 @@ html, body {
 	background-color: black;
 	outline:1px solid white;
 }
+
+#gameContainer .shipPartHit {
+	z-index: 2;
+	background-color: darkred;
+	outline:1px solid white;
+}
+
+#gameContainer .missed {
+	z-index: 2;
+	border-radius: 50%;
+	background-color: darkslategrey;
+	outline:1px solid white;
+}
+
+#gameContainer .fullyDestroyedShip {
+	z-index: 2;
+	background-color: springgreen;
+	outline:1px solid white;
+}

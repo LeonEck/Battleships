@@ -14,10 +14,53 @@ $(document).ready(function () {
 	});
 
 	socket.on("gameField", function (data) {
-		$(".shipPart").removeClass("shipPart");
+		$("myGameField .shipPart").removeClass("shipPart");
 		for(var i = 0; i < data.length; i++) {
-			if(data[i] === "x") {
-				$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
+			switch (data[i]) {
+				case "x":
+					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
+					break;
+					
+				case "d":
+					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPartHit");
+					break;
+					
+				case "z":
+					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("missed");
+					break;
+			
+				case "k":
+					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("fullyDestroyedShip");
+					break;
+			
+				default:
+					break;
+			}
+		}
+	});
+	
+	socket.on("opponentGameField", function (data) {
+		$("#opponentGameField .shipPart").removeClass("shipPart");
+		for(var i = 0; i < data.length; i++) {
+			switch (data[i]) {
+				case "x":
+					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
+					break;
+					
+				case "d":
+					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPartHit");
+					break;
+					
+				case "z":
+					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("missed");
+					break;
+			
+				case "k":
+					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("fullyDestroyedShip");
+					break;
+			
+				default:
+					break;
 			}
 		}
 	});
@@ -33,7 +76,6 @@ $(document).ready(function () {
 	});
 	
 	$(document).on("click", "#opponentGameField .gameFieldSquare", function () {
-		//console.log($(this).attr("squareNumber"));
 		socket.emit("clickOnOpponentGameField", $(this).attr("squareNumber"));
 	});
 
