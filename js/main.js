@@ -16,7 +16,7 @@ $(document).ready(function () {
 	socket.on("gameField", function (data) {
 		$("myGameField .shipPart").removeClass("shipPart");
 		for(var i = 0; i < data.length; i++) {
-			switch (data[i]) {
+			switch (data[i].substring(0,1)) {
 				case "x":
 					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
 					break;
@@ -42,7 +42,7 @@ $(document).ready(function () {
 	socket.on("opponentGameField", function (data) {
 		$("#opponentGameField .shipPart").removeClass("shipPart");
 		for(var i = 0; i < data.length; i++) {
-			switch (data[i]) {
+			switch (data[i].substring(0,1)) {
 				case "x":
 					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
 					break;
@@ -72,6 +72,14 @@ $(document).ready(function () {
 		} else {
 			$("#myTitle").removeClass("textRed");
 			$("#opponentTitle").addClass("textRed");
+		}
+	});
+	
+	socket.on("won", function (data) {
+		if(data) {
+			alert("You won!");
+		} else {
+			alert("You lost!");
 		}
 	});
 	

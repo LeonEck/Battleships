@@ -5,6 +5,7 @@ module.exports = {
 		this.gameFieldOne = gameFieldOne.slice();
 		this.gameFieldTwo = gameFieldTwo.slice();
 		this.playerWhosMoveItIs = playerOne;
+		this.playerWhoWon = 'none';
 		
 		this.passTurnOn = function () {
 			if (this.playerWhosMoveItIs === this.playerOne) {

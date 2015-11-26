@@ -24,18 +24,22 @@ io.sockets.on("connection", function (socket) {
 			// TODO: Wahrscheinlich doch wieder auf ein Array umsteigen
 			lobbyBuffer = "";
 		} else {
-			var gameId = perPlayerInformation.get(socket.id);
-			console.log("Clearing game: " + gameId);
-			io.sockets.to(runningGames.get(gameId).playerOne).emit("gameIsAborted", true);
-			io.sockets.to(runningGames.get(gameId).playerTwo).emit("gameIsAborted", true);
-			perPlayerInformation.delete(runningGames.get(gameId).playerOne);
-			perPlayerInformation.delete(runningGames.get(gameId).playerTwo);
-			if (runningGames.get(gameId).playerOne === socket.id) {
-				playerSearchingForGame(runningGames.get(gameId).playerTwo);
-			} else {
-				playerSearchingForGame(runningGames.get(gameId).playerOne);
+			try {
+				var gameId = perPlayerInformation.get(socket.id);
+				console.log("Clearing game: " + gameId);
+				io.sockets.to(runningGames.get(gameId).playerOne).emit("gameIsAborted", true);
+				io.sockets.to(runningGames.get(gameId).playerTwo).emit("gameIsAborted", true);
+				perPlayerInformation.delete(runningGames.get(gameId).playerOne);
+				perPlayerInformation.delete(runningGames.get(gameId).playerTwo);
+				if (runningGames.get(gameId).playerOne === socket.id) {
+					playerSearchingForGame(runningGames.get(gameId).playerTwo);
+				} else {
+					playerSearchingForGame(runningGames.get(gameId).playerOne);
+				}
+				runningGames.delete(gameId);
+			} catch (error) {
+				console.log(error, "Disconnect - ERROR");
 			}
-			runningGames.delete(gameId);
 		}
 	});
 
@@ -43,30 +47,61 @@ io.sockets.on("connection", function (socket) {
 		var gameIdForPlayer = perPlayerInformation.get(socket.id);
 		var affectedGameField;
 		// Check if the player has the right to move
-		if (socket.id !== runningGames.get(gameIdForPlayer).playerWhosMoveItIs) {
-			return;
-		}
-		// Get a reference for the oppent game field 
-		if (socket.id === runningGames.get(gameIdForPlayer).playerOne) {
-			affectedGameField = runningGames.get(gameIdForPlayer).gameFieldTwo;
-		} else {
-			affectedGameField = runningGames.get(gameIdForPlayer).gameFieldOne;
-		}
+		try {
+			if (socket.id !== runningGames.get(gameIdForPlayer).playerWhosMoveItIs) {
+				return;
+			}
+			// Get a reference for the oppent game field 
+			if (socket.id === runningGames.get(gameIdForPlayer).playerOne) {
+				affectedGameField = runningGames.get(gameIdForPlayer).gameFieldTwo;
+			} else {
+				affectedGameField = runningGames.get(gameIdForPlayer).gameFieldOne;
+			}
 		
-		// Filter out clicks on 'disabled' fields
-		if (affectedGameField[data] === "d" || affectedGameField[data] === "z" || affectedGameField[data] === "k") {
-			return;
-		}
+			// Filter out clicks on 'disabled' fields
+			if (affectedGameField[data] === "d" || affectedGameField[data] === "z" || affectedGameField[data] === "k") {
+				return;
+			}
 		
-		// Check if the player clicked on a ship or water
-		if (affectedGameField[data] === "x") {
-			affectedGameField[data] = "d";
-		} else {
-			affectedGameField[data] = "z";
-			runningGames.get(gameIdForPlayer).passTurnOn();
-		}
+			// Check if the player clicked on a ship or water
+			if (affectedGameField[data].substring(0, 1) === "x") {
+				var shipId = affectedGameField[data].substring(1, 2);
+				affectedGameField[data] = "d" + shipId;
+				// Check if all ship parts of this ship have been destroyed
+				var allDestroyed = true;
+				for (var j = 0; j < affectedGameField.length; j++) {
+					if (affectedGameField[j].substring(0, 1) === "x" && affectedGameField[j].substring(1, 2) == shipId) {
+						allDestroyed = false;
+					}
+				}
+				if (allDestroyed) {
+					for (var j = 0; j < affectedGameField.length; j++) {
+						if (affectedGameField[j].substring(0, 1) === "d" && affectedGameField[j].substring(1, 2) == shipId) {
+							affectedGameField[j] = "k";
+						}
+					}
+				}
+			} else {
+				affectedGameField[data] = "z";
+				runningGames.get(gameIdForPlayer).passTurnOn();
+			}
+		
+			// Check if the affected game field has no more ship parts
+			var noMoreShipParts = true;
+			for (var j = 0; j < affectedGameField.length; j++) {
+				if (affectedGameField[j].substring(0, 1) === "d" || affectedGameField[j].substring(0, 1) === "x") {
+					noMoreShipParts = false;
+				}
+			}
 
-		sendRunningGameItsInformations(gameIdForPlayer);
+			if (noMoreShipParts) {
+				runningGames.get(gameIdForPlayer).playerWhoWon = socket.id;
+			}
+
+			sendRunningGameItsInformations(gameIdForPlayer);
+		} catch (error) {
+			console.log(error, "ClickOnOpponentGameField - ERROR");
+		}
 	});
 
 });
@@ -106,30 +141,44 @@ function sendRunningGameItsInformations(gameId) {
 	// Send the player the opponent game fields but with all ships displayed as water
 	var playerOneGameField = runningGames.get(gameId).gameFieldOne.slice();
 	var playerTwoGameField = runningGames.get(gameId).gameFieldTwo.slice();
-	for(var i = 0; i < playerOneGameField.length; i++) {
-		if (playerOneGameField[i] === "x") {
+	for (var i = 0; i < playerOneGameField.length; i++) {
+		if (playerOneGameField[i].substring(0, 1) === "x") {
 			playerOneGameField[i] = "o";
 		}
 	}
-	for(var i = 0; i < playerTwoGameField.length; i++) {
-		if (playerTwoGameField[i] === "x") {
+	for (var i = 0; i < playerTwoGameField.length; i++) {
+		if (playerTwoGameField[i].substring(0, 1) === "x") {
 			playerTwoGameField[i] = "o";
 		}
 	}
-	
+
 	io.sockets.to(playerOneId).emit("opponentGameField", playerTwoGameField);
 	io.sockets.to(playerTwoId).emit("opponentGameField", playerOneGameField);
 
-	if (playerOneId === runningGames.get(gameId).playerWhosMoveItIs) {
-		io.sockets.to(playerOneId).emit("isItMyTurn", true);
-		io.sockets.to(playerTwoId).emit("isItMyTurn", false);
+	if (runningGames.get(gameId).playerWhoWon === "none") {
+		if (playerOneId === runningGames.get(gameId).playerWhosMoveItIs) {
+			io.sockets.to(playerOneId).emit("isItMyTurn", true);
+			io.sockets.to(playerTwoId).emit("isItMyTurn", false);
+		} else {
+			io.sockets.to(playerOneId).emit("isItMyTurn", false);
+			io.sockets.to(playerTwoId).emit("isItMyTurn", true);
+		}
 	} else {
-		io.sockets.to(playerOneId).emit("isItMyTurn", false);
-		io.sockets.to(playerTwoId).emit("isItMyTurn", true);
+		// Send out winning/loosing infos
+		io.sockets.to(runningGames.get(gameId).playerWhoWon).emit("won", true);
+		if (runningGames.get(gameId).playerWhoWon === runningGames.get(gameId).playerOne) {
+			io.sockets.to(runningGames.get(gameId).playerTwo).emit("won", false);
+		} else {
+			io.sockets.to(runningGames.get(gameId).playerOne).emit("won", false);
+		}
+		// Clean up
+		perPlayerInformation.delete(runningGames.get(gameId).playerOne);
+		perPlayerInformation.delete(runningGames.get(gameId).playerTwo);
+		runningGames.delete(gameId);
 	}
 }
 
-var predefinedGameField = ["x", "x", "x", "x", "x", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x", "x", "x", "x", "o", "o", "o", "o", "x", "o", "o", "o", "o", "x", "o", "x", "x", "o", "x", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x", "x", "x", "x", "o", "o", "x", "x", "x", "o", "o", "o", "o", "x", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x", "x", "x", "x", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x", "x", "x", "x", "o", "o", "o", "o", "o", "o"];
+var predefinedGameField = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
 
 
 
