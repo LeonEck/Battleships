@@ -1,3 +1,4 @@
+"use strict";
 $(document).ready(function () {
 	var socket = io.connect();
 
@@ -20,25 +21,25 @@ $(document).ready(function () {
 				case "x":
 					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
 					break;
-					
+
 				case "d":
 					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPartHit");
 					break;
-					
+
 				case "z":
 					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("missed");
 					break;
-			
+
 				case "k":
 					$("#myGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("fullyDestroyedShip");
 					break;
-			
+
 				default:
 					break;
 			}
 		}
 	});
-	
+
 	socket.on("opponentGameField", function (data) {
 		$("#opponentGameField .shipPart").removeClass("shipPart");
 		for(var i = 0; i < data.length; i++) {
@@ -46,19 +47,19 @@ $(document).ready(function () {
 				case "x":
 					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPart");
 					break;
-					
+
 				case "d":
 					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("shipPartHit");
 					break;
-					
+
 				case "z":
 					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("missed");
 					break;
-			
+
 				case "k":
 					$("#opponentGameField .gameFieldSquare[squareNumber=" + i + "]").addClass("fullyDestroyedShip");
 					break;
-			
+
 				default:
 					break;
 			}
@@ -74,7 +75,7 @@ $(document).ready(function () {
 			$("#opponentTitle").addClass("textRed");
 		}
 	});
-	
+
 	socket.on("won", function (data) {
 		if(data) {
 			alert("You won!");
@@ -82,7 +83,7 @@ $(document).ready(function () {
 			alert("You lost!");
 		}
 	});
-	
+
 	$(document).on("click", "#opponentGameField .gameFieldSquare", function () {
 		socket.emit("clickOnOpponentGameField", $(this).attr("squareNumber"));
 	});
@@ -95,7 +96,7 @@ function generateGameFields () {
 	for(var i = 1; i <= 10; i++) {
 		gameFieldHtml += "<td class='gameFieldHeaderSquare'>" + i + "</td>";
 	}
-	gameFieldHtml += "</tr>"
+	gameFieldHtml += "</tr>";
 	var squareCount = 0;
 	for(var i = 0; i < 10; i++) {
 		gameFieldHtml += "<tr><td class='gameFieldHeaderSquare'>" + characters[i] + "</td>";

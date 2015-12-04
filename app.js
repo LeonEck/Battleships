@@ -1,9 +1,10 @@
-var handler = require("./includes/MatchHandler");
+"use strict";
+var MatchHandler = require("./includes/MatchHandler");
 
 var express = require("express"),
 	app = express(),
 	server = require("http").createServer(app),
-	io = require("socket.io").listen(server)
+	io = require("socket.io").listen(server);
 server.listen(8000);
 var lobbyBuffer = "";
 var runningGames = new Map();
@@ -21,7 +22,6 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("disconnect", function () {
 		if (socket.id === lobbyBuffer) {
-			// TODO: Wahrscheinlich doch wieder auf ein Array umsteigen
 			lobbyBuffer = "";
 		} else {
 			try {
@@ -45,63 +45,8 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("clickOnOpponentGameField", function (data) {
 		var gameIdForPlayer = perPlayerInformation.get(socket.id);
-		var affectedGameField;
-		// Check if the player has the right to move
-		try {
-			if (socket.id !== runningGames.get(gameIdForPlayer).playerWhosMoveItIs) {
-				return;
-			}
-			// Get a reference for the oppent game field 
-			if (socket.id === runningGames.get(gameIdForPlayer).playerOne) {
-				affectedGameField = runningGames.get(gameIdForPlayer).gameFieldTwo;
-			} else {
-				affectedGameField = runningGames.get(gameIdForPlayer).gameFieldOne;
-			}
-		
-			// Filter out clicks on 'disabled' fields
-			if (affectedGameField[data] === "d" || affectedGameField[data] === "z" || affectedGameField[data] === "k") {
-				return;
-			}
-		
-			// Check if the player clicked on a ship or water
-			if (affectedGameField[data].substring(0, 1) === "x") {
-				var shipId = affectedGameField[data].substring(1, 2);
-				affectedGameField[data] = "d" + shipId;
-				// Check if all ship parts of this ship have been destroyed
-				var allDestroyed = true;
-				for (var j = 0; j < affectedGameField.length; j++) {
-					if (affectedGameField[j].substring(0, 1) === "x" && affectedGameField[j].substring(1, 2) == shipId) {
-						allDestroyed = false;
-					}
-				}
-				if (allDestroyed) {
-					for (var j = 0; j < affectedGameField.length; j++) {
-						if (affectedGameField[j].substring(0, 1) === "d" && affectedGameField[j].substring(1, 2) == shipId) {
-							affectedGameField[j] = "k";
-						}
-					}
-				}
-			} else {
-				affectedGameField[data] = "z";
-				runningGames.get(gameIdForPlayer).passTurnOn();
-			}
-		
-			// Check if the affected game field has no more ship parts
-			var noMoreShipParts = true;
-			for (var j = 0; j < affectedGameField.length; j++) {
-				if (affectedGameField[j].substring(0, 1) === "d" || affectedGameField[j].substring(0, 1) === "x") {
-					noMoreShipParts = false;
-				}
-			}
-
-			if (noMoreShipParts) {
-				runningGames.get(gameIdForPlayer).playerWhoWon = socket.id;
-			}
-
-			sendRunningGameItsInformations(gameIdForPlayer);
-		} catch (error) {
-			console.log(error, "ClickOnOpponentGameField - ERROR");
-		}
+		runningGames.get(gameIdForPlayer).clickOnOpponentGameField(socket.id, data);
+		sendRunningGameItsInformations(gameIdForPlayer);
 	});
 
 });
@@ -120,7 +65,7 @@ function playerSearchingForGame(socketId) {
 
 function createNewGame(playerOneId, playerTwoId) {
 	runningGames.set(runningGames.size,
-		new handler.MatchHandler(playerOneId, playerTwoId, predefinedGameField, predefinedGameField)
+		new MatchHandler(playerOneId, playerTwoId, predefinedGameField, predefinedGameField)
 		);
 
 	io.sockets.to(playerOneId).emit("gameIsStarting", true);
@@ -137,7 +82,7 @@ function sendRunningGameItsInformations(gameId) {
 
 	io.sockets.to(playerOneId).emit("gameField", runningGames.get(gameId).gameFieldOne);
 	io.sockets.to(playerTwoId).emit("gameField", runningGames.get(gameId).gameFieldTwo);
-	
+
 	// Send the player the opponent game fields but with all ships displayed as water
 	var playerOneGameField = runningGames.get(gameId).gameFieldOne.slice();
 	var playerTwoGameField = runningGames.get(gameId).gameFieldTwo.slice();
