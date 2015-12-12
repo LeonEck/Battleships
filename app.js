@@ -84,16 +84,23 @@ function sendRunningGameItsInformations(gameId) {
 	io.sockets.to(playerTwoId).emit("gameField", runningGames.get(gameId).gameFieldTwo);
 
 	// Send the player the opponent game fields but with all ships displayed as water
+	// and all id references removed
 	var playerOneGameField = runningGames.get(gameId).gameFieldOne.slice();
 	var playerTwoGameField = runningGames.get(gameId).gameFieldTwo.slice();
-	for (var i = 0; i < playerOneGameField.length; i++) {
+	for (let i = 0; i < playerOneGameField.length; i++) {
 		if (playerOneGameField[i].substring(0, 1) === "x") {
 			playerOneGameField[i] = "o";
 		}
+		if (playerOneGameField[i].substring(0, 1) === "d") {
+			playerOneGameField[i] = "d";
+		}
 	}
-	for (var i = 0; i < playerTwoGameField.length; i++) {
+	for (let i = 0; i < playerTwoGameField.length; i++) {
 		if (playerTwoGameField[i].substring(0, 1) === "x") {
 			playerTwoGameField[i] = "o";
+		}
+		if (playerTwoGameField[i].substring(0, 1) === "d") {
+			playerTwoGameField[i] = "d";
 		}
 	}
 

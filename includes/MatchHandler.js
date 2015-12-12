@@ -37,13 +37,13 @@ MatchHandler.prototype.clickOnOpponentGameField = function (socketId, fieldId) {
 			// Check if all ship parts of this ship have been destroyed
 			let allDestroyed = true;
 			for (let i = 0; i < affectedGameField.length; i++) {
-				if (affectedGameField[i].substring(0, 1) === "x" && Number(affectedGameField[i].substring(1, 2)) === shipId) {
+				if (affectedGameField[i].substring(0, 1) === "x" && affectedGameField[i].substring(1, 2) === shipId) {
 					allDestroyed = false;
 				}
 			}
 			if (allDestroyed) {
 				for (let i = 0; i < affectedGameField.length; i++) {
-					if (affectedGameField[i].substring(0, 1) === "d" && Number(affectedGameField[i].substring(1, 2)) === shipId) {
+					if (affectedGameField[i].substring(0, 1) === "d" && affectedGameField[i].substring(1, 2) === shipId) {
 						affectedGameField[i] = "k";
 					}
 				}
