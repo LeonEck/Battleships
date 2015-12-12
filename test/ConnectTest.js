@@ -52,14 +52,14 @@ describe('Join and leave handling', function () {
         });
 
         clientOne.on('connect', function () {
-            clientTwo.on('connect', function () {
-                clientOne.disconnect();
-                clientTwo.on('gameIsAborted', function (data) {
-                    assert.strictEqual(data, true, 'Game ist aborted');
-                    clientTwo.disconnect();
-                    done();
-                });
-            });
+        	clientOne.disconnect();
+        });
+
+        clientTwo.on('gameIsAborted', function (data) {
+            assert.strictEqual(data, true, 'Game ist aborted');
+            clientTwo.disconnect();
+            done();
         });
     });
 });
+

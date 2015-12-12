@@ -10,13 +10,9 @@ describe('Test basic game operations individually', function () {
 
     beforeEach(function () {
         clientOne = io.connect('http://localhost:8000', {
-            'reconnection delay': 0,
-            'reopen delay': 0,
             'force new connection': true
         });
         clientTwo = io.connect('http://localhost:8000', {
-            'reconnection delay': 0,
-            'reopen delay': 0,
             'force new connection': true
         });
     });
@@ -73,6 +69,17 @@ describe('Test basic game operations individually', function () {
         });
     });
 
+    it('If a player whos move it is clicks not on a ship part the turn is passed on', function (done) {
+        clientTwo.emit('clickOnOpponentGameField', 5);
+        clientOne.on('isItMyTurn', function (data) {
+            // If the turn is not passed on the test will fail with a timeout
+            if (data !== false) {
+                assert.ok(data, 'Player one now has the right to move');
+                done();
+            }
+        });
+    });
+
     it('If a player hits a ship part the opponent gets a damage indication on his game field', function (done) {
         clientTwo.emit('clickOnOpponentGameField', 0);
         clientOne.on('gameField', function (data) {
@@ -80,18 +87,6 @@ describe('Test basic game operations individually', function () {
             // This condition is necessary because it ignores the initial game field where the first field is water
             if (data[0] !== 'x1') {
                 assert.deepEqual(data, expectedValue, 'Field 0 is now a "shipPartHit"');
-                done();
-            }
-        });
-    });
-
-    it('If a player whos move it is clicks not on a ship part the turne is passed on', function (done) {
-        clientTwo.emit('clickOnOpponentGameField', 5);
-        let turnCounter = 0; // Goes up every time a player gets send the "isItMyTurn" socket
-        clientOne.on('isItMyTurn', function (data) {
-            turnCounter++;
-            if (turnCounter === 2) {
-                assert.ok(data, 'Player one now has the right to move');
                 done();
             }
         });

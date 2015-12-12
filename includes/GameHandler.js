@@ -5,41 +5,81 @@
 
 "use strict";
 
-var handler = require("./includes/MatchHandler");
+let MatchHandler = require("./MatchHandler");
 
-module.exports = {
-	GameHandler: function () {
-		var lobbyBuffer = "";
-		var runningGames = new Map();
-		/**
-		 * Stores a players Socket.id and his gameId in the runningGames Map
-		 * @type {Map}
-		 */
-		var perPlayerInformation = new Map();
+module.exports = GameHandler;
 
-		this.playerSearchingForGame = function (socketId) {
-			if (lobbyBuffer === "") {
-				lobbyBuffer = socketId;
+function GameHandler (io) {
+	this.io = io;
+
+	/**
+	 * Since this is a two player game, one player has to wait for another to connect
+	 * 	the player waiting is stored in this buffer
+	 * @type {String}
+	 */
+	this.lobbyBuffer = "";
+	this.runningMatches = new Map();
+	/**
+	 * Stores a players Socket.id and his gameId in the runningMatches Map
+	 * @type {Map}
+	 */
+	this.perPlayerInformation = new Map();
+
+	this.predefinedGameField = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
+}
+
+
+GameHandler.prototype.playerSearchingForGame = function (socketId) {
+	if (this.lobbyBuffer === "") {
+		this.lobbyBuffer = socketId;
+	} else {
+		let gameId = this._createNewGame(socketId, this.lobbyBuffer);
+		console.log("Creating game: " + gameId);
+		this.perPlayerInformation.set(socketId, gameId);
+		this.perPlayerInformation.set(this.lobbyBuffer, gameId);
+		this.lobbyBuffer = "";
+	}
+};
+
+GameHandler.prototype.playerLeftGame = function (socketId) {
+	if (socketId === this.lobbyBuffer) {
+		this.lobbyBuffer = "";
+	} else {
+		try {
+			let gameId = this.perPlayerInformation.get(socketId);
+			/*if (gameId === undefined) {
+				console.log(socketId);
+				return;
+			}*/
+			let affectedMatch = this.runningMatches.get(gameId);
+			console.log("Clearing game: " + gameId);
+			affectedMatch.closeMatch(socketId);
+			this.perPlayerInformation.delete(affectedMatch.playerOne);
+			this.perPlayerInformation.delete(affectedMatch.playerTwo);
+			if (affectedMatch.playerOne === socketId) {
+				this.playerSearchingForGame(affectedMatch.playerTwo);
 			} else {
-				var gameId = createNewGame(socketId, lobbyBuffer);
-				console.log("Creating game: " + gameId);
-				perPlayerInformation.set(socketId, gameId);
-				perPlayerInformation.set(lobbyBuffer, gameId);
-				lobbyBuffer = "";
+				this.playerSearchingForGame(affectedMatch.playerOne);
 			}
-		}
-
-		function createNewGame(playerOneId, playerTwoId) {
-			runningGames.set(runningGames.size,
-				new handler.MatchHandler(playerOneId, playerTwoId, predefinedGameField, predefinedGameField)
-				);
-
-			io.sockets.to(playerOneId).emit("gameIsStarting", true);
-			io.sockets.to(playerTwoId).emit("gameIsStarting", true);
-
-			sendRunningGameItsInformations(runningGames.size - 1);
-
-			return runningGames.size - 1;
+			this.runningMatches.delete(gameId);
+		} catch (error) {
+			console.log(error, "Disconnect - ERROR");
 		}
 	}
+};
+
+/**
+ * Create new game with the two players it gets passed
+ * @param  {String} playerOneId SocketId of player one
+ * @param  {String} playerTwoId SocketId of player two
+ * @return {Number}             Id of the created game
+ */
+GameHandler.prototype._createNewGame = function (playerOneId, playerTwoId) {
+	this.runningMatches.set(this.runningMatches.size,	new MatchHandler(playerOneId, playerTwoId, this.predefinedGameField, this.predefinedGameField, this.io));
+
+	return this.runningMatches.size - 1;
+};
+
+GameHandler.prototype.getMatch = function (socketIdOfAPlayer) {
+	return this.runningMatches.get(this.perPlayerInformation.get(socketIdOfAPlayer));
 };

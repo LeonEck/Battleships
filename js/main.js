@@ -10,6 +10,7 @@ $(document).ready(function () {
 	});
 
 	socket.on("gameIsAborted", function (data) {
+		generateGameFields();
 		$("#lobbyContainer").show();
 		$("#gameContainer").hide();
 	});
@@ -67,6 +68,7 @@ $(document).ready(function () {
 	});
 
 	socket.on("isItMyTurn", function (data) {
+		console.log("here");
 		if(data) {
 			$("#myTitle").addClass("textRed");
 			$("#opponentTitle").removeClass("textRed");
@@ -107,5 +109,5 @@ function generateGameFields () {
 		gameFieldHtml += "</tr>";
 	}
 	gameFieldHtml += "</table>"
-	$(".gameField").append(gameFieldHtml);
+	$(".gameField").html(gameFieldHtml);
 }
