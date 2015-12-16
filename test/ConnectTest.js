@@ -51,7 +51,7 @@ describe('Join and leave handling', function () {
             'force new connection': true
         });
 
-        clientOne.on('connect', function () {
+        clientOne.on('gameIsStarting', function () {
         	clientOne.disconnect();
         });
 

@@ -8,18 +8,46 @@ describe('Test basic game operations individually', function () {
     var clientOne;
     var clientTwo;
 
-    beforeEach(function () {
+    before(function (done) {
         clientOne = io.connect('http://localhost:8000', {
             'force new connection': true
         });
-        clientTwo = io.connect('http://localhost:8000', {
-            'force new connection': true
+
+        clientOne.on('connect', function () {
+            console.log("Client one connected");
+            done();
         });
     });
 
-    afterEach(function () {
-        clientOne.disconnect();
-        clientTwo.disconnect();
+    after(function (done) {
+        if (clientOne.connected) {
+            clientOne.disconnect();
+            console.log("Client one disconnected");
+        }
+        done();
+    });
+
+    beforeEach(function (done) {
+        clientTwo = io.connect('http://localhost:8000', {
+            'force new connection': true
+        });
+
+        clientTwo.on('connect', function () {
+            console.log("Client two connected");
+        });
+
+        clientTwo.on('gameIsStarting', function () {
+            console.log("Client two game started");
+            done();
+        });
+    });
+
+    afterEach(function (done) {
+        if (clientTwo.connected) {
+            clientTwo.disconnect();
+            console.log("Client two disconnected");
+        }
+        done();
     });
 
     it('Player who connects last has the first move', function (done) {
