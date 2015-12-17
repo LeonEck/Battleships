@@ -8,51 +8,25 @@ describe('Test basic game operations individually', function () {
     var clientOne;
     var clientTwo;
 
-    before(function (done) {
+
+    beforeEach(function () {
         clientOne = io.connect('http://localhost:8000', {
             'force new connection': true
         });
 
-        clientOne.on('connect', function () {
-            console.log("Client one connected");
-            done();
-        });
-    });
-
-    after(function (done) {
-        if (clientOne.connected) {
-            clientOne.disconnect();
-            console.log("Client one disconnected");
-        }
-        done();
-    });
-
-    beforeEach(function (done) {
         clientTwo = io.connect('http://localhost:8000', {
             'force new connection': true
         });
-
-        clientTwo.on('connect', function () {
-            console.log("Client two connected");
-        });
-
-        clientTwo.on('gameIsStarting', function () {
-            console.log("Client two game started");
-            done();
-        });
     });
 
-    afterEach(function (done) {
-        if (clientTwo.connected) {
-            clientTwo.disconnect();
-            console.log("Client two disconnected");
-        }
-        done();
+    afterEach(function () {
+        clientOne.disconnect();
+        clientTwo.disconnect();
     });
 
-    it('Player who connects last has the first move', function (done) {
-        clientTwo.on('isItMyTurn', function (data) {
-            assert.strictEqual(data, true, 'Player two has the first move');
+    it('Player who connects first has the first move', function (done) {
+        clientOne.on('isItMyTurn', function (data) {
+            assert.strictEqual(data, true, 'Player one has the first move');
             done();
         });
     });
@@ -74,8 +48,8 @@ describe('Test basic game operations individually', function () {
     });
 
     it('Player who clicked a ship part (id=0 "o") results in getting a new game field where this position is a "shipPartHit" now ("d")', function (done) {
-        clientTwo.emit('clickOnOpponentGameField', 0);
-        clientTwo.on('opponentGameField', function (data) {
+        clientOne.emit('clickOnOpponentGameField', 0);
+        clientOne.on('opponentGameField', function (data) {
             let expectedValue = ["d", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o"];
             // This condition is necessary because it ignores the initial game field where the first field is water
             if (data[0] !== 'o') {
@@ -86,9 +60,9 @@ describe('Test basic game operations individually', function () {
     });
 
     it('If a player hits a ship part the turn is not passed on', function (done) {
-        clientTwo.emit('clickOnOpponentGameField', 0);
+        clientOne.emit('clickOnOpponentGameField', 0);
         let turnCounter = 0; // Goes up every time a player gets send the "isItMyTurn" socket
-        clientTwo.on('isItMyTurn', function (data) {
+        clientOne.on('isItMyTurn', function (data) {
             turnCounter++;
             if (turnCounter === 2) {
                 assert.ok(data, 'Player two still has the right to play');
@@ -98,8 +72,8 @@ describe('Test basic game operations individually', function () {
     });
 
     it('If a player whos move it is clicks not on a ship part the turn is passed on', function (done) {
-        clientTwo.emit('clickOnOpponentGameField', 5);
-        clientOne.on('isItMyTurn', function (data) {
+        clientOne.emit('clickOnOpponentGameField', 5);
+        clientTwo.on('isItMyTurn', function (data) {
             // If the turn is not passed on the test will fail with a timeout
             if (data !== false) {
                 assert.ok(data, 'Player one now has the right to move');
@@ -109,8 +83,8 @@ describe('Test basic game operations individually', function () {
     });
 
     it('If a player hits a ship part the opponent gets a damage indication on his game field', function (done) {
-        clientTwo.emit('clickOnOpponentGameField', 0);
-        clientOne.on('gameField', function (data) {
+        clientOne.emit('clickOnOpponentGameField', 0);
+        clientTwo.on('gameField', function (data) {
             let expectedValue = ["d1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
             // This condition is necessary because it ignores the initial game field where the first field is water
             if (data[0] !== 'x1') {

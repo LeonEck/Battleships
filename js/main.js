@@ -10,8 +10,7 @@ $(document).ready(function () {
 	});
 
 	socket.on("gameIsAborted", function (data) {
-		generateGameFields();
-		$("#lobbyContainer").show();
+		alert("Game sborted. Please reload the page to search for a new game");
 		$("#gameContainer").hide();
 	});
 

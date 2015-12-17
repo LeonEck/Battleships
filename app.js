@@ -16,20 +16,12 @@ app.use(express.static(__dirname + '/'));
 
 let gameHandler = new GameHandler(io);
 
-setInterval(function () {
-	gameHandler.checkLobby();
-}, 1000);
-
-setInterval(function () {
-	gameHandler.checkLeavers();
-}, 1000);
-
 io.sockets.on("connection", function (socket) {
 
-	gameHandler.playerJoined(socket.id);
+	gameHandler.playerConnected(socket.id);
 
 	socket.on("disconnect", function () {
-		gameHandler.playerLeftGame(socket.id);
+		gameHandler.playerDisconnected(socket.id);
 	});
 
 	socket.on("clickOnOpponentGameField", function (data) {

@@ -2,21 +2,32 @@
 
 module.exports = MatchHandler;
 
-function MatchHandler (playerOne, playerTwo, gameFieldOne, gameFieldTwo, io) {
+function MatchHandler (playerOne, io) {
 	this.io = io;
 
 	this.playerOne = playerOne;
-	this.playerTwo = playerTwo;
-	this.gameFieldOne = gameFieldOne.slice();
-	this.gameFieldTwo = gameFieldTwo.slice();
+	this.playerTwo = '';
+	this.gameFieldOne = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
+	this.gameFieldTwo = [];
 	this.playerWhosMoveItIs = playerOne;
 	this.playerWhoWon = 'none';
-
-	io.sockets.to(playerOne).emit('gameIsStarting', true);
-	io.sockets.to(playerTwo).emit('gameIsStarting', true);
-
-	this.sendGameItsInformations();
 }
+
+MatchHandler.prototype.isFull = function () {
+	return (this.playerOne !== '' && this.playerTwo !== '');
+};
+
+MatchHandler.prototype.isAPlayerOfThisMatch = function (possiblePlayerId) {
+	return (this.playerOne === possiblePlayerId || this.playerTwo === possiblePlayerId);
+};
+
+MatchHandler.prototype.addPlayer = function (socketId) {
+	this.playerTwo = socketId;
+	this.gameFieldTwo = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
+	this.io.sockets.to(this.playerOne).emit('gameIsStarting', true);
+	this.io.sockets.to(this.playerTwo).emit('gameIsStarting', true);
+	this.sendGameItsInformations();
+};
 
 /**
  * Handles when a player clicks on his opponents game field
@@ -144,10 +155,7 @@ MatchHandler.prototype.sendGameItsInformations = function () {
 	}
 };
 
-MatchHandler.prototype.closeMatch = function (playerWhichLeft) {
-	if (this.playerOne === playerWhichLeft) {
-		this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
-	} else {
-		this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
-	}
+MatchHandler.prototype.closeMatch = function () {
+	this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
+	this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
 };
