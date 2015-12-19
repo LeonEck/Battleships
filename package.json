@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "main": "app.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha"
+    "test": "node ./node_modules/mocha/bin/mocha test",
+    "integrationtest": "node ./node_modules/mocha/bin/mocha integrationtest"
   },
   "repository": {
     "type": "git",
