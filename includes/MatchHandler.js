@@ -2,6 +2,11 @@
 
 module.exports = MatchHandler;
 
+/**
+ * MatchHandler constructor
+ * @param {String} playerOne socketId of the first player in the match
+ * @param {Object} io        io io object to connect to clients
+ */
 function MatchHandler (playerOne, io) {
 	this.io = io;
 
@@ -13,14 +18,27 @@ function MatchHandler (playerOne, io) {
 	this.playerWhoWon = 'none';
 }
 
+/**
+ * Check if the match already has two players in it
+ * @return {Boolean} True if there are two players in the game
+ */
 MatchHandler.prototype.isFull = function () {
 	return (this.playerOne !== '' && this.playerTwo !== '');
 };
 
+/**
+ * Check if a given socketId is one of the players in the game
+ * @param  {String}  possiblePlayerId socketId of a player to check
+ * @return {Boolean}                  True if the given player is in this match
+ */
 MatchHandler.prototype.isAPlayerOfThisMatch = function (possiblePlayerId) {
 	return (this.playerOne === possiblePlayerId || this.playerTwo === possiblePlayerId);
 };
 
+/**
+ * Add a new player to this game and start the game
+ * @param {String} socketId socketId of the player to add
+ */
 MatchHandler.prototype.addPlayer = function (socketId) {
 	this.playerTwo = socketId;
 	this.gameFieldTwo = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
@@ -36,8 +54,7 @@ MatchHandler.prototype.addPlayer = function (socketId) {
  */
 MatchHandler.prototype.clickOnOpponentGameField = function (socketId, fieldId) {
 	try {
-		// Check if the player has the right to move
-		if (socketId !== this.playerWhosMoveItIs) {
+		if (!this._isItThisPlayersTurn(socketId)) {
 			return;
 		}
 		// Get a reference for the opponent game field
@@ -158,4 +175,13 @@ MatchHandler.prototype.sendGameItsInformations = function () {
 MatchHandler.prototype.closeMatch = function () {
 	this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
 	this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
+};
+
+/**
+ * Check if the given player has the right to move
+ * @param  {String}  socketId SocketId of the player to check
+ * @return {Boolean}          True if the given player has the right to move
+ */
+MatchHandler.prototype._isItThisPlayersTurn = function (socketId) {
+  return socketId === this.playerWhosMoveItIs;
 };
