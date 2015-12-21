@@ -27,7 +27,8 @@ GameHandler.prototype.playerConnected = function (socketId) {
 	if (this.matches.length === 0 || this.matches[this.matches.length - 1].isFull()) {
 		this.matches.push(new MatchHandler(socketId, this.io));
 	}	else {
-		this.matches[this.matches.length - 1].addPlayer(socketId);
+		let affectedMatch = this.matches[this.matches.length - 1];
+		affectedMatch.addPlayer(socketId);
 	}
 };
 
