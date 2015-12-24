@@ -23,7 +23,7 @@ function MatchHandler (playerOne, io) {
  * @return {Boolean} True if there are two players in the game
  */
 MatchHandler.prototype.isFull = function () {
-	return (this.playerOne !== '' && this.playerTwo !== '');
+	return this.playerOne !== '' && this.playerTwo !== '';
 };
 
 /**
@@ -32,7 +32,7 @@ MatchHandler.prototype.isFull = function () {
  * @return {Boolean}                  True if the given player is in this match
  */
 MatchHandler.prototype.isAPlayerOfThisMatch = function (possiblePlayerId) {
-	return (this.playerOne === possiblePlayerId || this.playerTwo === possiblePlayerId);
+	return this.playerOne === possiblePlayerId || this.playerTwo === possiblePlayerId;
 };
 
 /**
@@ -42,16 +42,7 @@ MatchHandler.prototype.isAPlayerOfThisMatch = function (possiblePlayerId) {
 MatchHandler.prototype.addPlayer = function (socketId) {
 	this.playerTwo = socketId;
 	this.gameFieldTwo = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
-  this.startMatch();
-};
-
-/**
- * Inform the players that the game is starting and send them initial information
- */
-MatchHandler.prototype.startMatch = function () {
-  this.io.sockets.to(this.playerOne).emit('gameIsStarting', true);
-  this.io.sockets.to(this.playerTwo).emit('gameIsStarting', true);
-  this.sendGameItsInformations();
+  this._startMatch();
 };
 
 /**
@@ -82,15 +73,25 @@ MatchHandler.prototype.clickOnOpponentGameField = function (socketId, fieldId) {
 		if (!this._areShipPartsLeft(affectedGameField)) {
 			this.playerWhoWon = socketId;
 		}
+
+    this._sendGameItsInformations();
 	} catch (error) {
 		console.log(error, 'ClickOnOpponentGameField - ERROR');
 	}
 };
 
 /**
+ * Inform both players that their match has been closed
+ */
+MatchHandler.prototype.closeMatch = function () {
+  this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
+  this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
+};
+
+/**
  * Send this match its necessary information
  */
-MatchHandler.prototype.sendGameItsInformations = function () {
+MatchHandler.prototype._sendGameItsInformations = function () {
 	this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
 	this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
 
@@ -105,11 +106,12 @@ MatchHandler.prototype.sendGameItsInformations = function () {
 };
 
 /**
- * Inform both players that their match has been closed
+ * Inform the players that the game is starting and send them initial information
  */
-MatchHandler.prototype.closeMatch = function () {
-	this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
-	this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
+MatchHandler.prototype._startMatch = function () {
+  this.io.sockets.to(this.playerOne).emit('gameIsStarting', true);
+  this.io.sockets.to(this.playerTwo).emit('gameIsStarting', true);
+  this._sendGameItsInformations();
 };
 
 /**
