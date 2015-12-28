@@ -19,10 +19,10 @@ class GameHandler {
 	}
 
 	/**
-	 * Adds a connecting player to a game that is not yet full or creates a new one for him
+	 * Adds a player to a game that is not yet full or creates a new one for him
 	 * @param  {String} socketId socketId of the player connecting
 	 */
-	playerConnected (socketId) {
+	playerSearchingForGame (socketId) {
 		if (this.matches.length === 0 || this.matches[this.matches.length - 1].isFull()) {
 			this.matches.push(new MatchHandler(socketId, this.io));
 		}	else {

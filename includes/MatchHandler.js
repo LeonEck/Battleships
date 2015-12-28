@@ -73,7 +73,7 @@ class MatchHandler {
         this.playerWhoWon = socketId;
       }
 
-      this._sendGameItsInformations();
+      this._sendMatchItsInformations();
     } catch (error) {
       console.log(error, 'ClickOnOpponentGameField - ERROR');
     }
@@ -90,7 +90,7 @@ class MatchHandler {
   /**
    * Send this match its necessary information
    */
-  _sendGameItsInformations () {
+  _sendMatchItsInformations () {
     this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
     this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
 
@@ -110,7 +110,7 @@ class MatchHandler {
   _startMatch () {
     this.io.sockets.to(this.playerOne).emit('gameIsStarting', true);
     this.io.sockets.to(this.playerTwo).emit('gameIsStarting', true);
-    this._sendGameItsInformations();
+    this._sendMatchItsInformations();
   }
 
   /**
