@@ -12,32 +12,40 @@
     <link rel="stylesheet" href="css/main.css">
 
     <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+    <script src="js/vendor/jquery-1.11.2.min.js"></script>
 
     <script src="js/vendor/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/main.js"></script>
   </head>
   <body>
-  <div id="lobbyContainer">
-  	<div class="row">
-  		<div class="col-xs-3"></div>
-			<div class="col-xs-6">
-				Finding other player...
-			</div>
-  		<div class="col-xs-3"></div>
-  	</div>
-  </div>
-  <div id="gameContainer">
-    <div class="row">
-  		<div id="myTitle" class="col-xs-6 titleDisplay">Ich</div>
-  		<div id="opponentTitle" class="col-xs-6 titleDisplay">Gegner</div>
-  	</div>
-  	<div class="row fill">
-  		<div id="myGameField" class="col-xs-6 gameField"></div>
-  		<div id="opponentGameField" class="col-xs-6 gameField"></div>
-  	</div>
+  <div class="container-fluid">
+    <div id="lobbyContainer">
+      <div class="row">
+        <div class="col-xs-12">
+          <div id="gameWasClosedAlert" class="alert alert-warning" role="alert" hidden>Your game was closed. You can search for a new game if you want.</div>
+          <div id="gameWonAlert" class="alert alert-success" role="alert" hidden>You won the game! You can search for a new game if you want.</div>
+          <div id="gameLostAlert" class="alert alert-danger" role="alert" hidden>Your lost the game. You can search for a new game if you want.</div>
+        </div>
+      </div>
+    	<div class="row">
+  			<div class="col-xs-12">
+  				<button id="searchForGameButton" class="btn btn-primary center-block">Search for game</button>
+  			</div>
+    	</div>
+    </div>
+    <div id="gameContainer" hidden>
+    	<div class="row text-center">
+        <div class="col-lg-6">
+          <div id="myTitle" class="h3">My game field</div>
+          <div id="myGameField" class="gameField"></div>
+        </div>
+        <div class="col-lg-6">
+          <div id="opponentTitle" class="h3">Opponents game field</div>
+          <div id="opponentGameField" class="gameField"></div>
+        </div>
+    	</div>
+    </div>
   </div>
   </body>
 </html>

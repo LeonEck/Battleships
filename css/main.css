@@ -5,36 +5,13 @@ html, body {
   margin: 10px;
 }
 
-#gameContainer {
-	display: none;
-	height: 50%;
+.margin-auto {
+	margin: auto;
 }
 
-#gameContainer .titleDisplay{
-	font-size: 20px;
-	text-align: center;
-}
-
-#gameContainer .textRed{
-	color: red;
-}
-
-#gameContainer .fill {
-	height: 100%;
-}
-
-#gameContainer .gameField {
-	height: 100%;
-}
-
-#gameContainer table {
-	height: 100%;
-	width: 100%;
-	text-align: center;
-}
-
-#gameContainer table td {
-	width: 9%;
+#gameContainer table td, th {
+	width: 48px;
+	height: 48px;
 }
 
 #gameContainer .gameFieldHeaderSquare {
