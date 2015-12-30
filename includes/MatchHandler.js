@@ -1,5 +1,7 @@
 'use strict';
 
+let GameField = require('./GameField');
+
 class MatchHandler {
   /**
    * MatchHandler constructor
@@ -11,9 +13,11 @@ class MatchHandler {
 
     this.playerOne = playerOne;
     this.playerTwo = '';
-    this.gameFieldOne = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
+    this.gameFieldOne = [];
     this.gameFieldTwo = [];
-    this.playerWhosMoveItIs = playerOne;
+    this.gameFieldOneValidated = false;
+    this.gameFieldTwoValidated = false;
+    this.playerWhosMoveItIs = 'none';
     this.playerWhoWon = 'none';
   }
 
@@ -40,14 +44,65 @@ class MatchHandler {
    */
   addPlayer (socketId) {
     this.playerTwo = socketId;
-    this.gameFieldTwo = ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
-    this._startMatch();
+    this._startPreGame();
+  }
+
+  /**
+   * Generates a new random game field for the given player and sends it to him
+   * @param  {String} socketId SocketId of the player to generate the game field for
+   */
+  generateNewGameFieldForPlayer (socketId) {
+    if (socketId === this.playerOne) {
+      if (!this.gameFieldOneValidated) {
+        this.gameFieldOne = this._generateRandomGameField();
+        this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
+      }
+    } else if (socketId === this.playerTwo) {
+      if (!this.gameFieldTwoValidated) {
+        this.gameFieldTwo = this._generateRandomGameField();
+        this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
+      }
+    }
+  }
+
+  /**
+   * Validates the given game field and assigns it to the given player if it is valid. When both players have valid game fields this method picks a random player to begin and starts the match
+   * @param  {Array(String)} data     Given game field to validate
+   * @param  {String} socketId Given player to validate the game field for
+   */
+  validateGameFieldForPlayer (data, socketId) {
+    if (!this._isValidGameField(data)) {
+      this.io.sockets.to(socketId).emit('gameFieldValid', false);
+      return;
+    }
+
+    if (socketId === this.playerOne) {
+      this.gameFieldOne = data;
+      this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
+      this.gameFieldOneValidated = true;
+      this.io.sockets.to(this.playerOne).emit('gameFieldValid', true);
+    } else if (socketId === this.playerTwo) {
+      this.gameFieldTwo = data;
+      this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
+      this.gameFieldTwoValidated = true;
+      this.io.sockets.to(this.playerTwo).emit('gameFieldValid', true);
+    }
+
+    if (this.gameFieldOneValidated && this.gameFieldTwoValidated) {
+      const randomNumber = Math.floor((Math.random() * 10) + 1);
+      if (randomNumber <= 5) {
+        this.playerWhosMoveItIs = this.playerOne;
+      } else {
+        this.playerWhosMoveItIs = this.playerTwo;
+      }
+      this._startMatch();
+    }
   }
 
   /**
    * Handles when a player clicks on his opponents game field
    * @param {Number} socketId socketId
-   * @param  {Number} fieldId Index of the game field array where the player clicked
+   * @param {Number} fieldId Index of the game field array where the player clicked
    */
   clickOnOpponentGameField (socketId, fieldId) {
     try {
@@ -83,8 +138,8 @@ class MatchHandler {
    * Inform both players that their match has been closed
    */
   closeMatch () {
-    this.io.sockets.to(this.playerTwo).emit("gameIsAborted", true);
-    this.io.sockets.to(this.playerOne).emit("gameIsAborted", true);
+    this.io.sockets.to(this.playerTwo).emit('gameIsAborted', true);
+    this.io.sockets.to(this.playerOne).emit('gameIsAborted', true);
   }
 
   /**
@@ -102,6 +157,14 @@ class MatchHandler {
     } else {
       this._sendOutWinningAndLoosingInformation();
     }
+  }
+
+  /**
+   * Inform both players that the game is in the pre game phase
+   */
+  _startPreGame () {
+    this.io.sockets.to(this.playerTwo).emit('preGame', true);
+    this.io.sockets.to(this.playerOne).emit('preGame', true);
   }
 
   /**
@@ -267,6 +330,30 @@ class MatchHandler {
     }
 
     return false;
+  }
+
+  /**
+   * Generates a random game field
+   * @return {Array(String)} Random generated game field
+   */
+  _generateRandomGameField () {
+    let gameField = new GameField(10);
+    gameField.generateGameField();
+    return gameField.makeFlatArray();
+    //return ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
+  }
+
+  /**
+   * Checks if a given game field is valid
+   * @param  {Array(String)}  data Given game field to validate
+   * @return {Boolean}      True if the game field is valid
+   */
+  _isValidGameField (data) {
+    if (data.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 

@@ -1,4 +1,7 @@
 'use strict';
+
+var currentGameField = [];
+
 $(document).ready(function () {
   var socket = io.connect();
 
@@ -7,14 +10,45 @@ $(document).ready(function () {
     socket.emit('searchingForGame', true);
   });
 
+  $(document).on('click', '#getRandomGameFieldButton', function () {
+    socket.emit('getRandomGameField', true);
+  });
+
+  $(document).on('click', '#readyToPlayButton', function () {
+    socket.emit('validatePlayersGameField', currentGameField);
+  });
+
   $(document).on('click', '#opponentGameField .gameFieldSquare', function () {
     socket.emit('clickOnOpponentGameField', $(this).attr('squareNumber'));
   });
 
-  socket.on('gameIsStarting', function () {
+  socket.on('preGame', function () {
     $('#lobbyContainer').hide();
+    hideAllAlerts();
     generateGameFields();
+    $('#getRandomGameFieldButton').show();
+    $('#readyToPlayButton').text('Ready to play...');
+    $('#readyToPlayButton').removeClass('btn-success');
+    $('#readyToPlayButton').addClass('btn-danger');
+    $('#readyToPlayButton').show();
     $('#gameContainer').show();
+  });
+
+  socket.on('gameFieldValid', function (data) {
+    if (data) {
+      $('#readyToPlayButton').removeClass('btn-danger');
+      $('#readyToPlayButton').addClass('btn-success');
+      $('#readyToPlayButton').text('Waiting for opponent...');
+      showAlert('gameFieldValid');
+    } else {
+      alert('Your game field is not valid!');
+    }
+  });
+
+  socket.on('gameIsStarting', function () {
+    hideAllAlerts();
+    $('#getRandomGameFieldButton').hide();
+    $('#readyToPlayButton').hide();
   });
 
   socket.on('gameIsAborted', function () {
@@ -22,6 +56,7 @@ $(document).ready(function () {
   });
 
   socket.on('gameField', function (data) {
+    currentGameField = data;
     fillGameField('myGameField', data);
   });
 
@@ -99,9 +134,7 @@ function fillGameField (targetGameField, data) {
 }
 
 function showAlert (alertToShow) {
-  $('#gameWasClosedAlert').hide();
-  $('#gameWonAlert').hide();
-  $('#gameLostAlert').hide();
+  hideAllAlerts();
   switch (alertToShow) {
     case 'gameWasClosed':
       $('#gameWasClosedAlert').show();
@@ -112,7 +145,17 @@ function showAlert (alertToShow) {
     case 'gameLost':
       $('#gameLostAlert').show();
       break;
+    case 'gameFieldValid':
+      $('#gameFieldValidAlert').show();
+      break;
   }
+}
+
+function hideAllAlerts () {
+  $('#gameWasClosedAlert').hide();
+  $('#gameWonAlert').hide();
+  $('#gameLostAlert').hide();
+  $('#gameFieldValidAlert').hide();
 }
 
 function returnToLobbyWithAlert (alertToShow) {

@@ -26,6 +26,14 @@ io.sockets.on('connection', function (socket) {
 		gameHandler.playerDisconnected(socket.id);
 	});
 
+  socket.on('getRandomGameField', () => {
+    gameHandler.getMatch(socket.id).generateNewGameFieldForPlayer(socket.id);
+  });
+
+  socket.on('validatePlayersGameField', (data) => {
+    gameHandler.getMatch(socket.id).validateGameFieldForPlayer(data, socket.id);
+  });
+
 	socket.on('clickOnOpponentGameField', function (data) {
 		gameHandler.getMatch(socket.id).clickOnOpponentGameField(socket.id, data);
 	});
