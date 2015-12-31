@@ -35,7 +35,9 @@ io.sockets.on('connection', function (socket) {
   });
 
 	socket.on('clickOnOpponentGameField', function (data) {
-		gameHandler.getMatch(socket.id).clickOnOpponentGameField(socket.id, data);
+		if (gameHandler.getMatch(socket.id).clickOnOpponentGameField(socket.id, data)) {
+      gameHandler.closeGame(socket.id, false);
+    }
 	});
 
 });

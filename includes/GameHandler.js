@@ -36,9 +36,20 @@ class GameHandler {
 	 * @param  {String} socketId socketId of the player disconnecting
 	 */
 	playerDisconnected (socketId) {
+		this.closeGame(socketId, true);
+	}
+
+	/**
+	 * Close the match that the given player is in
+	 * @param  {String} socketId SocketId of the player whos match should be closed
+	 * @param  {Boolean} aborted  If true the clients gets a message that there game was aborted
+	 */
+	closeGame (socketId, aborted) {
 		for (let i = 0; i < this.matches.length; i++) {
 			if (this.matches[i].isAPlayerOfThisMatch(socketId)) {
-				this.matches[i].closeMatch();
+				if (aborted) {
+					this.matches[i].closeMatch();
+				}
 				this.matches.splice(i, 1);
 				break;
 			}

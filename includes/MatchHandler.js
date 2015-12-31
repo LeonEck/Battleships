@@ -13,10 +13,8 @@ class MatchHandler {
 
     this.playerOne = playerOne;
     this.playerTwo = '';
-    this.gameFieldOne = [];
-    this.gameFieldTwo = [];
-    this.gameFieldOneValidated = false;
-    this.gameFieldTwoValidated = false;
+    this.gameFieldOne = new GameField(10);
+    this.gameFieldTwo = new GameField(10);
     this.playerWhosMoveItIs = 'none';
     this.playerWhoWon = 'none';
   }
@@ -53,14 +51,14 @@ class MatchHandler {
    */
   generateNewGameFieldForPlayer (socketId) {
     if (socketId === this.playerOne) {
-      if (!this.gameFieldOneValidated) {
-        this.gameFieldOne = this._generateRandomGameField();
-        this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
+      if (!this.gameFieldOne.isLocked()) {
+        this.gameFieldOne.generateGameField();
+        this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
       }
     } else if (socketId === this.playerTwo) {
-      if (!this.gameFieldTwoValidated) {
-        this.gameFieldTwo = this._generateRandomGameField();
-        this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
+      if (!this.gameFieldTwo.isLocked()) {
+        this.gameFieldTwo.generateGameField();
+        this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
       }
     }
   }
@@ -71,24 +69,26 @@ class MatchHandler {
    * @param  {String} socketId Given player to validate the game field for
    */
   validateGameFieldForPlayer (data, socketId) {
-    if (!this._isValidGameField(data)) {
+    let validatorGameField = new GameField(10);
+
+    if (!validatorGameField.isValidGameField(data)) {
       this.io.sockets.to(socketId).emit('gameFieldValid', false);
       return;
     }
 
     if (socketId === this.playerOne) {
-      this.gameFieldOne = data;
-      this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
-      this.gameFieldOneValidated = true;
+      this.gameFieldOne.loadFlatArray(data);
+      this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
+      this.gameFieldOne.lock();
       this.io.sockets.to(this.playerOne).emit('gameFieldValid', true);
     } else if (socketId === this.playerTwo) {
-      this.gameFieldTwo = data;
-      this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
-      this.gameFieldTwoValidated = true;
+      this.gameFieldTwo.loadFlatArray(data);
+      this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
+      this.gameFieldTwo.lock();
       this.io.sockets.to(this.playerTwo).emit('gameFieldValid', true);
     }
 
-    if (this.gameFieldOneValidated && this.gameFieldTwoValidated) {
+    if (this.gameFieldOne.isLocked() && this.gameFieldTwo.isLocked()) {
       const randomNumber = Math.floor((Math.random() * 10) + 1);
       if (randomNumber <= 5) {
         this.playerWhosMoveItIs = this.playerOne;
@@ -103,6 +103,7 @@ class MatchHandler {
    * Handles when a player clicks on his opponents game field
    * @param {Number} socketId socketId
    * @param {Number} fieldId Index of the game field array where the player clicked
+   * @return {Boolean} Return true if the turn ended the game
    */
   clickOnOpponentGameField (socketId, fieldId) {
     try {
@@ -113,22 +114,24 @@ class MatchHandler {
       // Get a reference for the opponent game field
       let affectedGameField = this._getOpponentGameField(socketId);
 
-      if (this._isNotClickableField(affectedGameField[fieldId])) {
+      if (!affectedGameField.isClickableField(fieldId)) {
         return;
       }
 
-      if (this._isShip(affectedGameField[fieldId])) {
-        this._clickOnShippart(affectedGameField, fieldId);
+      if (affectedGameField.isIntactShip(fieldId)) {
+        affectedGameField.clickOnShipPart(fieldId);
       } else {
-        affectedGameField[fieldId] = 'z';
+        affectedGameField.setMissed(fieldId);
         this._passTurnOn();
       }
 
-      if (!this._areShipPartsLeft(affectedGameField)) {
+      if (!affectedGameField.areNotFullyDestroyedShipPartsLeft()) {
         this.playerWhoWon = socketId;
       }
 
-      this._sendMatchItsInformations();
+      if (this._sendMatchItsInformations()) {
+        return true;
+      }
     } catch (error) {
       console.log(error, 'ClickOnOpponentGameField - ERROR');
     }
@@ -144,18 +147,20 @@ class MatchHandler {
 
   /**
    * Send this match its necessary information
+   * @return {Boolean} Returns true if someone won the match
    */
   _sendMatchItsInformations () {
-    this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne);
-    this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo);
+    this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
+    this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
 
-    this.io.sockets.to(this.playerOne).emit('opponentGameField', this._removeShipsAndIdsFromGamefield(this.gameFieldTwo));
-    this.io.sockets.to(this.playerTwo).emit('opponentGameField', this._removeShipsAndIdsFromGamefield(this.gameFieldOne));
+    this.io.sockets.to(this.playerOne).emit('opponentGameField', this.gameFieldTwo.makeAnonymousFlatArray());
+    this.io.sockets.to(this.playerTwo).emit('opponentGameField', this.gameFieldOne.makeAnonymousFlatArray());
 
     if (this.playerWhoWon === 'none') {
       this._sendOutTurnInformation();
     } else {
       this._sendOutWinningAndLoosingInformation();
+      return true;
     }
   }
 
@@ -226,134 +231,12 @@ class MatchHandler {
   }
 
   /**
-   * Takes in a game field and returns the same one, but with all undiscovered ship parts as water
-   *   and without any IDs
-   * @param  {Array} gameField Given game field
-   * @return {Array}           New game field
-   */
-  _removeShipsAndIdsFromGamefield (gameField) {
-    let gameFieldCopy = gameField.slice();
-    for (let i = 0; i < gameFieldCopy.length; i++) {
-      // Change not yet found ship parts to water
-      if (gameFieldCopy[i].substring(0, 1) === 'x') {
-        gameFieldCopy[i] = 'o';
-      }
-      // Remove the IDs from hit ship parts
-      if (gameFieldCopy[i].substring(0, 1) === 'd') {
-        gameFieldCopy[i] = 'd';
-      }
-    }
-
-    return gameFieldCopy;
-  }
-
-  /**
    * Check if the given player has the right to move
    * @param  {String}  socketId SocketId of the player to check
    * @return {Boolean}          True if the given player has the right to move
    */
   _isItThisPlayersTurn (socketId) {
     return socketId === this.playerWhosMoveItIs;
-  }
-
-  /**
-   * Checks if a given field value is of type 'not clickable'
-   * @param  {String}  fieldValue Given field value to check
-   * @return {Boolean}            True if the given value can not be clicked
-   */
-  _isNotClickableField (fieldValue) {
-    return fieldValue.substring(0, 1) === 'd' || fieldValue === 'z' || fieldValue === 'k';
-  }
-
-  /**
-   * Checks if a given field value is of type 'ship'
-   * @param  {String}  fieldValue Given field value to check
-   * @return {Boolean}            True if the given value is a ship
-   */
-  _isShip (fieldValue) {
-    return fieldValue.substring(0, 1) === 'x';
-  }
-
-  /**
-   * Performs the action behind a valid ship part click
-   * @param  {Array} affectedGameField Game field
-   * @param  {Number} fieldId           Index of hit ship part
-   */
-  _clickOnShippart (affectedGameField, fieldId) {
-    let shipId = affectedGameField[fieldId].substring(1, 2);
-    affectedGameField[fieldId] = 'd' + shipId; // Marks field as a hit ship part
-
-    if (this._isAShipCompletelyDestroyed(affectedGameField, shipId)) {
-      this._markShipAsCompletelyDestroyed(affectedGameField, shipId);
-    }
-  }
-
-  /**
-   * Check if all parts of a given shipId have been destroyed
-   * @param  {Array}  affectedGameField Game field
-   * @param  {Number}  shipId            ShipId to check
-   * @return {Boolean}                   True if a given shipId is completely destroyed
-   */
-  _isAShipCompletelyDestroyed (affectedGameField, shipId) {
-    for (let i = 0; i < affectedGameField.length; i++) {
-      if (affectedGameField[i].substring(0, 1) === 'x' && affectedGameField[i].substring(1, 2) === shipId) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Marks all parts of a given ship as completely destroyed
-   * @param  {Array} affectedGameField Game field
-   * @param  {Number} shipId            Given shipId
-   */
-  _markShipAsCompletelyDestroyed (affectedGameField, shipId) {
-    for (let i = 0; i < affectedGameField.length; i++) {
-      if (affectedGameField[i].substring(0, 1) === 'd' && affectedGameField[i].substring(1, 2) === shipId) {
-        affectedGameField[i] = 'k';
-      }
-    }
-  }
-
-  /**
-   * Check if there are any ship parts in a given game field
-   * @param  {Array} affectedGameField Game field
-   * @return {Boolean}                   True if there are still ship parts on the field
-   */
-  _areShipPartsLeft (affectedGameField) {
-    for (let i = 0; i < affectedGameField.length; i++) {
-      if (affectedGameField[i].substring(0, 1) === 'd' || affectedGameField[i].substring(0, 1) === 'x') {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Generates a random game field
-   * @return {Array(String)} Random generated game field
-   */
-  _generateRandomGameField () {
-    let gameField = new GameField(10);
-    gameField.generateGameField();
-    return gameField.makeFlatArray();
-    //return ["x1", "x1", "x1", "x1", "x1", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x2", "x2", "x2", "x3", "o", "o", "o", "o", "x5", "o", "o", "o", "o", "x3", "o", "x4", "x4", "o", "x5", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x9", "x9", "x9", "x6", "o", "o", "x7", "x7", "x7", "o", "o", "o", "o", "x6", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x0", "x0", "x0", "x0", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "o", "x8", "x8", "x8", "x8", "o", "o", "o", "o", "o", "o"];
-  }
-
-  /**
-   * Checks if a given game field is valid
-   * @param  {Array(String)}  data Given game field to validate
-   * @return {Boolean}      True if the game field is valid
-   */
-  _isValidGameField (data) {
-    if (data.length > 0) {
-      return true;
-    } else {
-      return false;
-    }
   }
 }
 

@@ -23,6 +23,7 @@ $(document).ready(function () {
   });
 
   socket.on('preGame', function () {
+    currentGameField = [];
     $('#lobbyContainer').hide();
     hideAllAlerts();
     generateGameFields();
