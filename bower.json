@@ -1,0 +1,21 @@
+{
+  "name": "battleships",
+  "description": "",
+  "main": "app.js",
+  "authors": [
+    "Leon Eck"
+  ],
+  "moduleType": [],
+  "homepage": "https://github.com/LeonEck/Battleships",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.6"
+  }
+}

@@ -1,20 +1,22 @@
 {
-  "name": "battleship",
+  "name": "battleships",
   "version": "0.0.1",
   "main": "app.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha"
+    "test": "node ./node_modules/mocha/bin/mocha",
+    "postinstall": "bower install"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LeonEck/SchiffeVersenken.git"
+    "url": "git+https://github.com/LeonEck/Battleships.git"
   },
   "author": "Leon Eck",
   "bugs": {
-    "url": "https://github.com/LeonEck/SchiffeVersenken/issues"
+    "url": "https://github.com/LeonEck/Battleships/issues"
   },
-  "homepage": "https://github.com/LeonEck/SchiffeVersenken",
+  "homepage": "https://github.com/LeonEck/Battleships",
   "dependencies": {
+    "bower": "^1.7.2",
     "express": "^4.13.3",
     "socket.io": "^1.3.7"
   },
