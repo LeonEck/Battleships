@@ -13,17 +13,29 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      files: ['app.js', 'includes/**/*.js', 'test/**/*.js']
+      options: {
+        jshintrc: true
+      },
+      files: ['app.js', 'includes/**/*.js', 'test/**/*.js', 'integrationtest/**/*.js', 'js/**/*.js']
+    },
+    watch: {
+      files: ['<%= jshint.files %>'],
+      tasks: ['jshint']
+    },
+    mochaTest: {
+      test: {
+        src: ['test/**/*.js']
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
-  // Default task(s).
   grunt.registerTask('default', ['uglify']);
-
-  // JsHint task
   grunt.registerTask('hint', ['jshint']);
+  grunt.registerTask('test', ['mochaTest']);
 
 };
