@@ -19,8 +19,14 @@ module.exports = function(grunt) {
       files: ['app.js', 'includes/**/*.js', 'test/**/*.js', 'integrationtest/**/*.js', 'js/**/*.js']
     },
     watch: {
-      files: ['<%= jshint.files %>'],
-      tasks: ['jshint']
+      hint: {
+        files: ['<%= jshint.files %>'],
+        tasks: ['jshint']
+      },
+      test: {
+        files: ['<%= mochaTest.test.src %>'],
+        tasks: ['mochaTest']
+      }
     },
     mochaTest: {
       test: {
