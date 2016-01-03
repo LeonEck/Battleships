@@ -13,31 +13,31 @@ let io = require("socket.io").listen(server);
 
 server.listen(8000);
 
-describe('MatchHandler Test', function () {
+describe('MatchHandler Test', () => {
 
   let matchHandler;
 
-  beforeEach(function () {
+  beforeEach(() => {
     matchHandler = new MatchHandler('abc', io);
   });
 
-  describe('isFull', function () {
-    it('true', function () {
+  describe('isFull', () => {
+    it('should return true when a new player was added', () => {
       matchHandler.addPlayer("123");
       assert.strictEqual(matchHandler.isFull(), true, 'Game has two players');
     });
 
-    it('false', function () {
+    it('should return false when there is only one player in the game', () => {
       assert.strictEqual(matchHandler.isFull(), false, 'Game has only one player');
     });
   });
 
-  describe('isAPlayerOfThisMatch', function () {
-    it('true', function () {
+  describe('isAPlayerOfThisMatch', () => {
+    it('should return true if "abc" is a player of the match', () => {
       assert.strictEqual(matchHandler.isAPlayerOfThisMatch('abc'), true, 'abc is a player of the game');
     });
 
-    it('false', function () {
+    it('should return false if "def" is not a player of this match', () => {
       assert.strictEqual(matchHandler.isAPlayerOfThisMatch('def'), false, 'def is not a player of the game');
     });
   });
