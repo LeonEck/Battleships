@@ -23,50 +23,68 @@ class GameHandler {
 	 * @param  {String} socketId socketId of the player connecting
 	 */
 	playerSearchingForGame (socketId) {
-		if (this.matches.length === 0 || this.matches[this.matches.length - 1].isFull()) {
-			this.matches.push(new MatchHandler(socketId, this.io));
-		}	else {
-			let affectedMatch = this.matches[this.matches.length - 1];
-			affectedMatch.addPlayer(socketId);
+		if (!this.isThisPlayerInAnyMatch(socketId)) {
+			if (this._shouldANewMatchBeCreated()) {
+				this.matches.push(new MatchHandler(socketId, this.io));
+			}	else {
+				this.matches[this.matches.length - 1].addPlayer(socketId);
+			}
 		}
 	}
 
 	/**
-	 * Searches for the game the player disconnected from and closes it
-	 * @param  {String} socketId socketId of the player disconnecting
-	 */
-	playerDisconnected (socketId) {
-		this.closeGame(socketId, true);
-	}
-
-	/**
 	 * Close the match that the given player is in
-	 * @param  {String} socketId SocketId of the player whos match should be closed
+	 * @param  {String} socketId SocketId of the player who's match should be closed
 	 * @param  {Boolean} aborted  If true the clients gets a message that there game was aborted
 	 */
-	closeGame (socketId, aborted) {
+	closeMatch (socketId, aborted) {
 		for (let i = 0; i < this.matches.length; i++) {
 			if (this.matches[i].isAPlayerOfThisMatch(socketId)) {
 				if (aborted) {
 					this.matches[i].closeMatch();
 				}
 				this.matches.splice(i, 1);
-				break;
+				return;
 			}
 		}
 	}
 
 	/**
 	 * Returns the MatchHandler object for a player
-	 * @param  {String} socketIdOfAPlayer socketId of a player you want to get the match for
+	 * @param  {String} socketId socketId of a player you want to get the match for
 	 * @return {Object}                   MatchHandler
 	 */
-	getMatch (socketIdOfAPlayer) {
+	getMatch (socketId) {
 		for (let i = 0; i < this.matches.length; i++) {
-			if (this.matches[i].isAPlayerOfThisMatch(socketIdOfAPlayer)) {
+			if (this.matches[i].isAPlayerOfThisMatch(socketId)) {
 				return this.matches[i];
 			}
 		}
+	}
+
+	/**
+	 * Checks if a given socketId if it exists in any match
+	 * @param  {String}  socketId socketId of the player to check
+	 * @return {Boolean}          True when there is a match with this player in
+	 * it
+	 */
+	isThisPlayerInAnyMatch(socketId) {
+		for (let i = 0; i < this.matches.length; i++) {
+			if (this.matches[i].isAPlayerOfThisMatch(socketId)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * If there are no matches or the last one is already full than an new one
+	 * need to be created
+	 * @return {Boolean} True when all matches are full or there are no matches
+	 */
+	_shouldANewMatchBeCreated () {
+		return this.matches.length === 0 || this.matches[this.matches.length - 1].isFull();
 	}
 }
 

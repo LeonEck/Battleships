@@ -106,34 +106,30 @@ class MatchHandler {
    * @return {Boolean} Return true if the turn ended the game
    */
   clickOnOpponentGameField (socketId, fieldId) {
-    try {
-      if (!this._isItThisPlayersTurn(socketId)) {
-        return;
-      }
+    if (!this._isItThisPlayersTurn(socketId)) {
+      return;
+    }
 
-      // Get a reference for the opponent game field
-      let affectedGameField = this._getOpponentGameField(socketId);
+    // Get a reference for the opponent game field
+    let affectedGameField = this._getOpponentGameField(socketId);
 
-      if (!affectedGameField.isClickableField(fieldId)) {
-        return;
-      }
+    if (!affectedGameField.isClickableField(fieldId)) {
+      return;
+    }
 
-      if (affectedGameField.isIntactShip(fieldId)) {
-        affectedGameField.clickOnShipPart(fieldId);
-      } else {
-        affectedGameField.setMissed(fieldId);
-        this._passTurnOn();
-      }
+    if (affectedGameField.isIntactShip(fieldId)) {
+      affectedGameField.clickOnShipPart(fieldId);
+    } else {
+      affectedGameField.setMissed(fieldId);
+      this._passTurnOn();
+    }
 
-      if (!affectedGameField.areNotFullyDestroyedShipPartsLeft()) {
-        this.playerWhoWon = socketId;
-      }
+    if (!affectedGameField.areNotFullyDestroyedShipPartsLeft()) {
+      this.playerWhoWon = socketId;
+    }
 
-      if (this._sendMatchItsInformations()) {
-        return true;
-      }
-    } catch (error) {
-      console.log(error, 'ClickOnOpponentGameField - ERROR');
+    if (this._sendMatchItsInformations()) {
+      return true;
     }
   }
 

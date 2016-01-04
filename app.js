@@ -8,7 +8,7 @@ let io = require('socket.io').listen(server);
 
 server.listen(8000);
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
 });
 
@@ -16,27 +16,33 @@ app.use(express.static(__dirname + '/'));
 
 let gameHandler = new GameHandler(io);
 
-io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', (socket) => {
 
   socket.on('searchingForGame', () => {
     gameHandler.playerSearchingForGame(socket.id);
   });
 
-	socket.on('disconnect', function () {
-		gameHandler.playerDisconnected(socket.id);
+	socket.on('disconnect', () => {
+		gameHandler.closeMatch(socket.id, true);
 	});
 
   socket.on('getRandomGameField', () => {
-    gameHandler.getMatch(socket.id).generateNewGameFieldForPlayer(socket.id);
+    if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
+      gameHandler.getMatch(socket.id).generateNewGameFieldForPlayer(socket.id);
+    }
   });
 
   socket.on('validatePlayersGameField', (data) => {
-    gameHandler.getMatch(socket.id).validateGameFieldForPlayer(data, socket.id);
+    if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
+      gameHandler.getMatch(socket.id).validateGameFieldForPlayer(data, socket.id);
+    }
   });
 
-	socket.on('clickOnOpponentGameField', function (data) {
-		if (gameHandler.getMatch(socket.id).clickOnOpponentGameField(socket.id, data)) {
-      gameHandler.closeGame(socket.id, false);
+	socket.on('clickOnOpponentGameField', (data) => {
+    if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
+  		if (gameHandler.getMatch(socket.id).clickOnOpponentGameField(socket.id, data)) {
+        gameHandler.closeMatch(socket.id, false);
+      }
     }
 	});
 
