@@ -56,4 +56,11 @@ describe('GameField Test', () => {
     });
   });
 
+  describe('isClickableField', () => {
+    it('should detect a ship part as an clickable field', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      assert.deepEqual(gameField.isClickableField(0), true, 'First field is a clickable ship part');
+    });
+  });
+
 });

@@ -29,8 +29,11 @@ node_modules
 # Bower dependencies
 bower_components
 
-#Visual Studio Code
+# Visual Studio Code
 typings
 
-#Grunt-Build
+# Tern
+.tern-project
+
+# Grunt-Build
 build/
