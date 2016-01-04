@@ -61,6 +61,55 @@ describe('GameField Test', () => {
       gameField.loadFlatArray(testFlatArrayGameField);
       assert.deepEqual(gameField.isClickableField(0), true, 'First field is a clickable ship part');
     });
+
+    it('should detect water as an clickable field', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      assert.deepEqual(gameField.isClickableField(3), true, 'Fourth field is water and therefore clickable');
+    });
+
+    it('should detect an already clicked water field (now a missed field) as not clickable', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      gameField.setMissed(3);
+      assert.deepEqual(gameField.isClickableField(3), false, 'Fourth field is a missed field and therefore not clickable');
+    });
+
+    it('should detect an already clicked ship part field (now a destroyed ship part) as not clickable', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      gameField.clickOnShipPart(0);
+      assert.deepEqual(gameField.isClickableField(0), false, 'First field is a destroyed ship part and therefore not clickable');
+    });
+  });
+
+  describe('isIntactShip', () => {
+    it('should detect an intact ship part', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      assert.deepEqual(gameField.isIntactShip(0), true, 'First field is an intact ship part');
+    });
+
+    it('should detect a destroyed ship part', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      gameField.clickOnShipPart(0);
+      assert.deepEqual(gameField.isIntactShip(0), false, 'First field is a destroyed ship part');
+    });
+
+    it('should detect a fully destroyed ship part', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      gameField.clickOnShipPart(0);
+      gameField.clickOnShipPart(1);
+      gameField.clickOnShipPart(2);
+      assert.deepEqual(gameField.isIntactShip(0), false, 'First field is a fully destroyed ship part');
+    });
+
+    it('should return false on water', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      assert.deepEqual(gameField.isIntactShip(3), false, 'Fourth field is water');
+    });
+
+    it('should return false on missed fields', () => {
+      gameField.loadFlatArray(testFlatArrayGameField);
+      gameField.setMissed(3);
+      assert.deepEqual(gameField.isIntactShip(3), false, 'Fourth field is a missed field');
+    });
   });
 
 });
