@@ -5,6 +5,14 @@ html, body {
   margin: 10px;
 }
 
+.top60 {
+	margin-top: 60px;
+}
+
+.bottom5 {
+	margin-bottom: 5px;
+}
+
 .margin-auto {
 	margin: auto;
 }
