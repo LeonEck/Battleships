@@ -1,8 +1,5 @@
-html, body {
-  height: 100%;
-  padding-left: 0;
-  padding-right: 0;
-  margin: 10px;
+.top20 {
+	margin-top: 20px;
 }
 
 .top60 {
@@ -11,6 +8,10 @@ html, body {
 
 .bottom5 {
 	margin-bottom: 5px;
+}
+
+.left20 {
+	margin-left: 20px;
 }
 
 .margin-auto {
@@ -58,4 +59,8 @@ html, body {
 	z-index: 2;
 	background-color: springgreen;
 	outline:1px solid white;
+}
+
+.shipMapKey {
+	margin-left: 20px;
 }

@@ -33,6 +33,8 @@ $(document).ready(function () {
     $('#readyToPlayButton').addClass('btn-danger');
     $('#readyToPlayButton').show();
     $('#gameContainer').show();
+    $('#opponentDisplay').hide();
+    $('#opponentsShips').hide();
   });
 
   socket.on('gameFieldValid', function (data) {
@@ -50,6 +52,8 @@ $(document).ready(function () {
     hideAllAlerts();
     $('#getRandomGameFieldButton').hide();
     $('#readyToPlayButton').hide();
+    $('#opponentDisplay').show();
+    $('#opponentsShips').show();
   });
 
   socket.on('gameIsAborted', function () {
@@ -65,6 +69,10 @@ $(document).ready(function () {
     fillGameField('opponentGameField', data);
   });
 
+  socket.on('shipMap', function (data) {
+    parseShipMapArray(data);
+  });
+
   socket.on('isItMyTurn', function (data) {
     turnDisplay(data);
   });
@@ -76,10 +84,17 @@ $(document).ready(function () {
       returnToLobbyWithAlert('gameLost');
     }
   });
-
-
-
 });
+
+function parseShipMapArray (data) {
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].isFullyDestroyed) {
+      $('.shipMapKey[shipId="' + i + '"]').attr('src', 'img/Ship' + data[i].length + 'Destroyed.png');
+    } else {
+      $('.shipMapKey[shipId="' + i + '"]').attr('src', 'img/Ship' + data[i].length + 'Intact.png');
+    }
+  }
+}
 
 function generateGameFields () {
   $('.gameField').empty();

@@ -152,6 +152,9 @@ class MatchHandler {
     this.io.sockets.to(this.playerOne).emit('opponentGameField', this.gameFieldTwo.makeAnonymousFlatArray());
     this.io.sockets.to(this.playerTwo).emit('opponentGameField', this.gameFieldOne.makeAnonymousFlatArray());
 
+    this.io.sockets.to(this.playerOne).emit('shipMap', this.gameFieldTwo.getShipMapAsArray());
+    this.io.sockets.to(this.playerTwo).emit('shipMap', this.gameFieldOne.getShipMapAsArray());
+
     if (this.playerWhoWon === 'none') {
       this._sendOutTurnInformation();
     } else {

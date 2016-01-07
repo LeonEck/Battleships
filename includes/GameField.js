@@ -13,6 +13,12 @@ class GameField {
      * @type {Boolean}
      */
     this.locked = false;
+    /**
+     * Stores for each ship Id how long the ship is and if it is fully
+     * destroyed
+     * @type {Map}
+     */
+    this.shipMap = new Map();
     this._initGameField();
   }
 
@@ -38,6 +44,7 @@ class GameField {
    */
   generateGameField () {
     this._initGameField();
+    this.shipMap.clear();
     let gameFieldGenerated = false;
     while (!gameFieldGenerated) {
       if (this._generateGameField()) {
@@ -114,7 +121,6 @@ class GameField {
   clickOnShipPart (fieldId) {
     let twoDimensionalCoordinates = this._translateCoordinates(fieldId);
     this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].destroy();
-
     this._checkIfShipIsFullyDestroyed(this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].getShipId());
   }
 
@@ -200,6 +206,27 @@ class GameField {
       }
     }
 
+    return returnArray;
+  }
+
+  /**
+   * Get shipMap as array
+   * @return {Array} shipMap as array
+   */
+  getShipMapAsArray () {
+    let returnArray = [];
+    this.shipMap.forEach(function (value) {
+      returnArray.push(value);
+    });
+    returnArray.sort(function (a, b) {
+      if (a.length > b.length) {
+        return 1;
+      }
+      if (a.length < b.length) {
+        return -1;
+      }
+      return 0;
+    });
     return returnArray;
   }
 
@@ -387,6 +414,8 @@ class GameField {
           }
         }
       }
+
+      this.shipMap.get(shipId).isFullyDestroyed = true;
     }
   }
 
@@ -447,11 +476,16 @@ class GameField {
       // Fall back to ensure the generator doesn't get stuck
       if (iterationCounter > 1000) {
         this._initGameField();
+        this.shipMap.clear();
         return false;
       }
       const randomShipIndex = this._getRandomInt(0, tmpShipsToPlace.length - 1);
       const randomShip = tmpShipsToPlace[randomShipIndex];
       if (this._placeShip(randomShip.length, this._getRandomInt(0, this.size - 1), this._getRandomInt(0, this.size - 1), this._getRandomDirection(), nextShipId)) {
+        this.shipMap.set(nextShipId, {
+          length: randomShip.length,
+          isFullyDestroyed: false
+        });
         nextShipId++;
         iterationCounter = 0;
         if (tmpShipsToPlace[randomShipIndex].amount === 1) {
