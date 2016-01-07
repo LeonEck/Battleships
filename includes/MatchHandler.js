@@ -180,7 +180,7 @@ class MatchHandler {
   /**
    * Return the game field of the opposite player that was passed in
    * @param  {Number} socketId socketId
-   * @return {Array}          Opponent game field
+   * @return {GameField}          Opponent game field
    */
    _getOpponentGameField (socketId) {
     if (socketId === this.playerOne) {
