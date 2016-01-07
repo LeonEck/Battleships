@@ -30,7 +30,7 @@ node_modules
 bower_components
 
 # JSDoc
-out
+doc
 
 # Visual Studio Code
 typings

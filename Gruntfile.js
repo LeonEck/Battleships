@@ -32,6 +32,14 @@ module.exports = function(grunt) {
       test: {
         src: ['test/**/*.js']
       }
+    },
+    jsdoc : {
+      dist : {
+        src: ['includes/**/*.js'],
+        options: {
+          destination: 'doc'
+        }
+      }
     }
   });
 
@@ -39,9 +47,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('default', ['uglify']);
   grunt.registerTask('hint', ['jshint']);
   grunt.registerTask('test', ['mochaTest']);
+  grunt.registerTask('doc', ['jsdoc']);
 
 };
