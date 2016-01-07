@@ -29,6 +29,9 @@ node_modules
 # Bower dependencies
 bower_components
 
+# JSDoc
+out
+
 # Visual Studio Code
 typings
 
