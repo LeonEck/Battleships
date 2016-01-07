@@ -66,13 +66,7 @@ $(document).ready(function () {
   });
 
   socket.on('isItMyTurn', function (data) {
-    if (data) {
-      $('#myTitle').addClass('text-danger');
-      $('#opponentTitle').removeClass('text-danger');
-    } else {
-      $('#myTitle').removeClass('text-danger');
-      $('#opponentTitle').addClass('text-danger');
-    }
+    turnDisplay(data);
   });
 
   socket.on('won', function (data) {
@@ -131,6 +125,22 @@ function fillGameField (targetGameField, data) {
       default:
         break;
     }
+  }
+}
+
+function turnDisplay (isItMyTurn) {
+  if (isItMyTurn) {
+    $('#myTitle').addClass('text-danger');
+    $('#myTitle').text('Your Turn *** My game field *** Your Turn');
+    $('#opponentTitle').text('Opponents game field');
+    $('#opponentTitle').removeClass('text-danger');
+    $('#opponentGameField > table').addClass('tableRedBorder');
+  } else {
+    $('#myTitle').removeClass('text-danger');
+    $('#opponentTitle').text('Opponents Turn - Opponents game field - Opponents Turn');
+    $('#myTitle').text('My game field');
+    $('#opponentTitle').addClass('text-danger');
+    $('#opponentGameField > table').removeClass('tableRedBorder');
   }
 }
 
