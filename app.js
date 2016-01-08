@@ -32,9 +32,9 @@ io.sockets.on('connection', (socket) => {
     }
   });
 
-  socket.on('validatePlayersGameField', (data) => {
+  socket.on('playerIsReady', (data) => {
     if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
-      gameHandler.getMatch(socket.id).validateGameFieldForPlayer(data, socket.id);
+      gameHandler.getMatch(socket.id).playerIsReady(socket.id);
     }
   });
 

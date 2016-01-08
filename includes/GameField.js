@@ -19,7 +19,7 @@ class GameField {
      * @type {Map}
      */
     this.shipMap = new Map();
-    this._initGameField();
+    this.generateGameField();
   }
 
   /**
@@ -51,31 +51,6 @@ class GameField {
         gameFieldGenerated = true;
       }
     }
-  }
-
-  /**
-   * Takes in a flat array and returns true if it is valid
-   * @param  {Array(String)}  data Flat array of the game field
-   * @return {Boolean}      Returns true if the game field is valid
-   */
-  isValidGameField (data) {
-    if (data.length <= 0 || data.length > (this.size * this.size)) {
-      return false;
-    }
-
-    if (!this._gameFieldConsistsOfTheRightCharacters(data)) {
-      return false;
-    }
-
-    if (!this._gameFieldConsistsOfTheRightAmountOfShips(data)) {
-      return false;
-    }
-
-    if (!this._everyShipPartIsTechnicallyValid(data)) {
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -228,161 +203,6 @@ class GameField {
       return 0;
     });
     return returnArray;
-  }
-
-  /**
-   * A ship part is considered technically valid when it has exactly one or
-   * two adjacent fields (up, down, left or right not diagonal) that are also
-   * a ship part and have the same ship Id
-   * Notes:
-   *   To parse the data more easily i am loading the flat array
-   *     - There should be sanity checks for the given before it is parsed
-   *     into this function
-   * @param  {Array(String)} data Takes in a flat array
-   * @return {Boolean}      True if all fields are considered valid
-   */
-  _everyShipPartIsTechnicallyValid (data) {
-    this.loadFlatArray(data);
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        if (this.gameField[x][y].getType() === 'shipPart') {
-          const expectedShipId = this.gameField[x][y].getShipId();
-
-          // up left
-          if (this._areCoordinatesWithinBounds(x - 1, y - 1)) {
-            if (!this._isFieldWater(x - 1, y - 1)) {
-              return false;
-            }
-          }
-
-          // up right
-          if (this._areCoordinatesWithinBounds(x + 1, y - 1)) {
-            if (!this._isFieldWater(x + 1, y - 1)) {
-              return false;
-            }
-          }
-
-          // down left
-          if (this._areCoordinatesWithinBounds(x - 1, y + 1)) {
-            if (!this._isFieldWater(x - 1, y + 1)) {
-              return false;
-            }
-          }
-
-          // down right
-          if (this._areCoordinatesWithinBounds(x + 1, y + 1)) {
-            if (!this._isFieldWater(x + 1, y + 1)) {
-              return false;
-            }
-          }
-
-          let countOccupiedFields = 0;
-          let shipIdOfOccupiedFieldOne = -1;
-          let shipIdOfOccupiedFieldTwo = -1;
-          // up
-          if (this._areCoordinatesWithinBounds(x, y - 1)) {
-            if (!this._isFieldWater(x, y - 1)) {
-              countOccupiedFields++;
-              if (shipIdOfOccupiedFieldOne !== -1) {
-                shipIdOfOccupiedFieldTwo = this.gameField[x][y - 1].getShipId();
-              } else {
-                shipIdOfOccupiedFieldOne = this.gameField[x][y - 1].getShipId();
-              }
-            }
-          }
-
-          // down
-          if (this._areCoordinatesWithinBounds(x, y + 1)) {
-            if (!this._isFieldWater(x, y + 1)) {
-              countOccupiedFields++;
-              if (shipIdOfOccupiedFieldOne !== -1) {
-                shipIdOfOccupiedFieldTwo = this.gameField[x][y + 1].getShipId();
-              } else {
-                shipIdOfOccupiedFieldOne = this.gameField[x][y + 1].getShipId();
-              }
-            }
-          }
-
-          // left
-          if (this._areCoordinatesWithinBounds(x - 1, y)) {
-            if (!this._isFieldWater(x - 1, y)) {
-              countOccupiedFields++;
-              if (shipIdOfOccupiedFieldOne !== -1) {
-                shipIdOfOccupiedFieldTwo = this.gameField[x - 1][y].getShipId();
-              } else {
-                shipIdOfOccupiedFieldOne = this.gameField[x - 1][y].getShipId();
-              }
-            }
-          }
-
-          // right
-          if (this._areCoordinatesWithinBounds(x + 1, y)) {
-            if (!this._isFieldWater(x + 1, y)) {
-              countOccupiedFields++;
-              if (shipIdOfOccupiedFieldOne !== -1) {
-                shipIdOfOccupiedFieldTwo = this.gameField[x + 1][y].getShipId();
-              } else {
-                shipIdOfOccupiedFieldOne = this.gameField[x + 1][y].getShipId();
-              }
-            }
-          }
-
-          if (countOccupiedFields !== 1 && countOccupiedFields !== 2) {
-            return false;
-          }
-
-          if (countOccupiedFields === 1) {
-            if (expectedShipId !== shipIdOfOccupiedFieldOne) {
-              return false;
-            }
-          } else {
-            if (!(expectedShipId === shipIdOfOccupiedFieldOne && expectedShipId === shipIdOfOccupiedFieldTwo)) {
-              return false;
-            }
-          }
-        }
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Checks if the given flat array consists of valid characters
-   * @param  {Array(String)} data Flat array
-   * @return {Boolean}      True if the data is valid
-   */
-  _gameFieldConsistsOfTheRightCharacters (data) {
-    for (let i = 0; i < (this.size * this.size); i++) {
-      if (data[i].substring(0, 1) !== 'x' && data[i].substring(0, 1) !== 'o') {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Checks if the given flat array has the right amount of ship parts in it
-   * @param  {Array(String)} data Flat array
-   * @return {Boolean}      True if the data is valid
-   */
-  _gameFieldConsistsOfTheRightAmountOfShips (data) {
-    // Find out what the right amount is
-    let expectedAmountOfShips = 0;
-    let tmpShipsToPlace = this._getShipsToPlace();
-    for (let i = 0; i < tmpShipsToPlace.length; i++) {
-      expectedAmountOfShips += tmpShipsToPlace[i].amount * tmpShipsToPlace[i].length;
-    }
-
-    let amountOfShipsInData = 0;
-    for (let i = 0; i < (this.size * this.size); i++) {
-      if (data[i].substring(0, 1) === 'x') {
-        amountOfShipsInData++;
-      }
-    }
-
-    return amountOfShipsInData === expectedAmountOfShips;
   }
 
   /**

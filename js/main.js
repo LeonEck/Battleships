@@ -15,7 +15,7 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '#readyToPlayButton', function () {
-    socket.emit('validatePlayersGameField', currentGameField);
+    socket.emit('playerIsReady', true);
   });
 
   $(document).on('click', '#opponentGameField .gameFieldSquare', function () {
@@ -37,15 +37,11 @@ $(document).ready(function () {
     $('#opponentsShips').hide();
   });
 
-  socket.on('gameFieldValid', function (data) {
-    if (data) {
-      $('#readyToPlayButton').removeClass('btn-danger');
-      $('#readyToPlayButton').addClass('btn-success');
-      $('#readyToPlayButton').text('Waiting for opponent...');
-      showAlert('gameFieldValid');
-    } else {
-      alert('Your game field is not valid!');
-    }
+  socket.on('waitingForOpponent', function () {
+    $('#readyToPlayButton').removeClass('btn-danger');
+    $('#readyToPlayButton').addClass('btn-success');
+    $('#readyToPlayButton').text('Waiting for opponent...');
+    showAlert('waitingForOpponent');
   });
 
   socket.on('gameIsStarting', function () {
@@ -171,8 +167,8 @@ function showAlert (alertToShow) {
     case 'gameLost':
       $('#gameLostAlert').show();
       break;
-    case 'gameFieldValid':
-      $('#gameFieldValidAlert').show();
+    case 'waitingForOpponent':
+      $('#waitingForOpponentAlert').show();
       break;
   }
 }
@@ -181,7 +177,7 @@ function hideAllAlerts () {
   $('#gameWasClosedAlert').hide();
   $('#gameWonAlert').hide();
   $('#gameLostAlert').hide();
-  $('#gameFieldValidAlert').hide();
+  $('#waitingForOpponentAlert').hide();
 }
 
 function returnToLobbyWithAlert (alertToShow) {

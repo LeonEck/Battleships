@@ -64,28 +64,16 @@ class MatchHandler {
   }
 
   /**
-   * Validates the given game field and assigns it to the given player if it is valid. When both players have valid game fields this method picks a random player to begin and starts the match
-   * @param  {Array(String)} data     Given game field to validate
-   * @param  {String} socketId Given player to validate the game field for
+   * Gets called when a player is ready to play
+   * @param  {String} socketId socket id of the player that is ready
    */
-  validateGameFieldForPlayer (data, socketId) {
-    let validatorGameField = new GameField(10);
-
-    if (!validatorGameField.isValidGameField(data)) {
-      this.io.sockets.to(socketId).emit('gameFieldValid', false);
-      return;
-    }
-
+  playerIsReady (socketId) {
     if (socketId === this.playerOne) {
-      this.gameFieldOne.loadFlatArray(data);
-      this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
       this.gameFieldOne.lock();
-      this.io.sockets.to(this.playerOne).emit('gameFieldValid', true);
+      this.io.sockets.to(this.playerOne).emit('waitingForOpponent', true);
     } else if (socketId === this.playerTwo) {
-      this.gameFieldTwo.loadFlatArray(data);
-      this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
       this.gameFieldTwo.lock();
-      this.io.sockets.to(this.playerTwo).emit('gameFieldValid', true);
+      this.io.sockets.to(this.playerTwo).emit('waitingForOpponent', true);
     }
 
     if (this.gameFieldOne.isLocked() && this.gameFieldTwo.isLocked()) {
@@ -167,8 +155,10 @@ class MatchHandler {
    * Inform both players that the game is in the pre game phase
    */
   _startPreGame () {
-    this.io.sockets.to(this.playerTwo).emit('preGame', true);
     this.io.sockets.to(this.playerOne).emit('preGame', true);
+    this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
+    this.io.sockets.to(this.playerTwo).emit('preGame', true);
+    this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
   }
 
   /**
