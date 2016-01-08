@@ -1,7 +1,5 @@
 'use strict';
 
-var currentGameField = [];
-
 $(document).ready(function () {
   var socket = io.connect();
 
@@ -23,7 +21,6 @@ $(document).ready(function () {
   });
 
   socket.on('preGame', function () {
-    currentGameField = [];
     $('#lobbyContainer').hide();
     hideAllAlerts();
     generateGameFields();
@@ -57,7 +54,6 @@ $(document).ready(function () {
   });
 
   socket.on('gameField', function (data) {
-    currentGameField = data;
     fillGameField('myGameField', data);
   });
 
