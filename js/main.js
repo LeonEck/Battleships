@@ -110,7 +110,6 @@ function generateGameFields () {
 }
 
 function fillGameField (targetGameField, data) {
-  console.log(data);
   $('#' + targetGameField + ' .shipPart').removeClass('shipPart');
   for(var i = 0; i < data.length; i++) {
     switch (data[i]) {
