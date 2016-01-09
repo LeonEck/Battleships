@@ -110,22 +110,23 @@ function generateGameFields () {
 }
 
 function fillGameField (targetGameField, data) {
+  console.log(data);
   $('#' + targetGameField + ' .shipPart').removeClass('shipPart');
   for(var i = 0; i < data.length; i++) {
-    switch (data[i].substring(0,1)) {
-      case 'x':
+    switch (data[i]) {
+      case 'i':
         $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('shipPart');
         break;
 
-      case 'd':
+      case 'h':
         $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('shipPartHit');
         break;
 
-      case 'z':
+      case 'm':
         $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('missed');
         break;
 
-      case 'k':
+      case 'd':
         $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('fullyDestroyedShip');
         break;
 

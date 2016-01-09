@@ -54,22 +54,6 @@ class GameField {
   }
 
   /**
-   * Loads in a flat array (used by the client)
-   * @param  {Array(String)} data Flat array
-   */
-  loadFlatArray (data) {
-    this._initGameField();
-    for (let i = 0; i < (this.size * this.size); i++) {
-      let twoDimensionalCoordinates = this._translateCoordinates(i);
-      if (data[i] === 'o') {
-        this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y] = new Water();
-      } else {
-        this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y] = new ShipPart(Number(data[i].substring(1, 2)));
-      }
-    }
-  }
-
-  /**
    * Check if the given fieldId from a flat array would be a clickable field
    * @param  {Number}  fieldId Id in the flat array to check
    * @return {Boolean}         True if the field is clickable
@@ -86,7 +70,7 @@ class GameField {
    */
   isIntactShip (fieldId) {
     let twoDimensionalCoordinates = this._translateCoordinates(fieldId);
-    return (this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].getType() === 'shipPart' && !this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].isDestroyed());
+    return (this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].getType() === 'intactShipPart');
   }
 
   /**
@@ -95,8 +79,9 @@ class GameField {
    */
   clickOnShipPart (fieldId) {
     let twoDimensionalCoordinates = this._translateCoordinates(fieldId);
-    this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].destroy();
-    this._checkIfShipIsFullyDestroyed(this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].getShipId());
+    const shipId = this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y].getShipId();
+    this.gameField[twoDimensionalCoordinates.x][twoDimensionalCoordinates.y] = new HitShipPart(shipId);
+    this._checkIfShipIsFullyDestroyed(shipId);
   }
 
   /**
@@ -118,10 +103,8 @@ class GameField {
 
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.gameField[j][i].getType() === 'shipPart') {
-          if (!this.gameField[j][i].isDestroyed()) {
-            notAllFullyDestroyed = true;
-          }
+        if (this.gameField[j][i].getType() === 'intactShipPart' || this.gameField[j][i].getType() === 'hitShipPart') {
+          notAllFullyDestroyed = true;
         }
       }
     }
@@ -139,17 +122,7 @@ class GameField {
 
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.gameField[j][i].getType() === 'water' || this.gameField[j][i].getType() === 'missed') {
-          returnArray.push(this.gameField[j][i].getLabel());
-        } else {
-          if (this.gameField[j][i].getDestroyed() === 'intact') {
-            returnArray.push(this.gameField[j][i].getLabel() + this.gameField[j][i].getShipId());
-          } else if (this.gameField[j][i].getDestroyed() === 'destroyed') {
-            returnArray.push('d');
-          } else if (this.gameField[j][i].getDestroyed() === 'wholeShipDestroyed') {
-            returnArray.push('k');
-          }
-        }
+        returnArray.push(this.gameField[j][i].getLabel());
       }
     }
 
@@ -167,17 +140,7 @@ class GameField {
 
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.gameField[j][i].getType() === 'water' || this.gameField[j][i].getType() === 'missed') {
-          returnArray.push(this.gameField[j][i].getLabel());
-        } else {
-          if (this.gameField[j][i].getDestroyed() === 'intact') {
-            returnArray.push('o');
-          } else if (this.gameField[j][i].getDestroyed() === 'destroyed') {
-            returnArray.push('d');
-          } else if (this.gameField[j][i].getDestroyed() === 'wholeShipDestroyed') {
-            returnArray.push('k');
-          }
-        }
+        returnArray.push(this.gameField[j][i].getAnonymousLabel());
       }
     }
 
@@ -214,11 +177,9 @@ class GameField {
     let allDestroyed = true;
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.gameField[j][i].getType() === 'shipPart') {
+        if (this.gameField[j][i].getType() === 'intactShipPart') {
           if (this.gameField[j][i].getShipId() === shipId) {
-            if (this.gameField[j][i].isIntact()) {
-              allDestroyed = false;
-            }
+            allDestroyed = false;
           }
         }
       }
@@ -227,9 +188,9 @@ class GameField {
     if (allDestroyed) {
       for (let i = 0; i < this.size; i++) {
         for (let j = 0; j < this.size; j++) {
-          if (this.gameField[j][i].getType() === 'shipPart') {
+          if (this.gameField[j][i].getType() === 'hitShipPart') {
             if (this.gameField[j][i].getShipId() === shipId) {
-              this.gameField[j][i].setWholeShipDestroyed();
+              this.gameField[j][i] = new DestroyedShipPart(shipId);
             }
           }
         }
@@ -367,22 +328,22 @@ class GameField {
     switch (direction) {
       case 'up':
         for (let i = y; i > y - length; i--) {
-          this.gameField[x][i] = new ShipPart(id);
+          this.gameField[x][i] = new IntactShipPart(id);
         }
         break;
       case 'down':
         for (let i = y; i < y + length; i++) {
-          this.gameField[x][i] = new ShipPart(id);
+          this.gameField[x][i] = new IntactShipPart(id);
         }
         break;
       case 'left':
         for (let i = x; i > x - length; i--) {
-          this.gameField[i][y] = new ShipPart(id);
+          this.gameField[i][y] = new IntactShipPart(id);
         }
         break;
       case 'right':
         for (let i = x; i < x + length; i++) {
-          this.gameField[i][y] = new ShipPart(id);
+          this.gameField[i][y] = new IntactShipPart(id);
         }
         break;
     }
@@ -613,11 +574,13 @@ class Field {
   /**
    * Field constructor
    * @param  {String} label     Label of the field
+   * @param  {String} anonymousLabel     Anonymous label of the field
    * @param  {String} type      Type of the field
    * @param  {Boolean} clickable Is it clickable
    */
-  constructor (label, type, clickable) {
+  constructor (label, anonymousLabel, type, clickable) {
     this.label = label;
+    this.anonymousLabel = anonymousLabel;
     this.type = type;
     this.clickable = clickable;
   }
@@ -628,6 +591,14 @@ class Field {
    */
   getLabel () {
     return this.label;
+  }
+
+  /**
+   * Return the anonymous label
+   * @return {String} Anonymous label
+   */
+  getAnonymousLabel () {
+    return this.anonymousLabel;
   }
 
   /**
@@ -645,14 +616,6 @@ class Field {
   isClickable () {
     return this.clickable;
   }
-
-  /**
-   * Sets the field as clickable
-   * @param {Boolean} value New value of clickable
-   */
-  setClickable (value) {
-    this.clickable = value;
-  }
 }
 
 class Water extends Field {
@@ -660,7 +623,7 @@ class Water extends Field {
    * Water constructor
    */
   constructor () {
-    super('o', 'water', true);
+    super('w', 'w', 'water', true);
   }
 }
 
@@ -669,24 +632,22 @@ class Missed extends Field {
    * Missed constructor
    */
   constructor () {
-    super('z', 'missed', false);
+    super('m', 'm', 'missed', false);
   }
 }
 
 class ShipPart extends Field {
   /**
-   * ShipPart constructor
-   * @param  {Number} shipId Id of the ship this field is a part of
+   * Creates a generic ship part
+   * @param  {String} label          Label
+   * @param  {String} anonymousLabel Anonymous label
+   * @param  {String} type           Type of the field
+   * @param  {Boolean} clickable      Is it clickable
+   * @param  {Number} shipId         Id if the ship
    */
-  constructor (shipId) {
-    super('x', 'shipPart', true);
+  constructor (label, anonymousLabel, type, clickable, shipId) {
+    super(label, anonymousLabel, type, clickable);
     this.shipId = shipId;
-    this.levelOfDestructionEnum = Object.freeze({
-      INTACT: 'intact',
-      DESTROYED: 'destroyed',
-      WHOLESHIPDESTROYED: 'wholeShipDestroyed'
-    });
-    this.destroyed = this.levelOfDestructionEnum.INTACT;
   }
 
   /**
@@ -696,45 +657,35 @@ class ShipPart extends Field {
   getShipId () {
     return this.shipId;
   }
+}
 
+class IntactShipPart extends ShipPart {
   /**
-   * Returns the value of destroyed
-   * @return {String} Destroyed value
+   * Intact ship part constructor
+   * @param  {Number} shipId ShipId
    */
-  getDestroyed () {
-    return this.destroyed;
+  constructor (shipId) {
+    super('i', 'w', 'intactShipPart', true, shipId);
   }
+}
 
+class HitShipPart extends ShipPart {
   /**
-   * Checks if the ship part is destroyed or fully destroyed
-   * @return {Boolean} True if the field is destroyed or fully destroyed
+   * Hit ship part constructor
+   * @param  {Number} shipId ShipId
    */
-  isDestroyed () {
-    return (this.destroyed === this.levelOfDestructionEnum.DESTROYED || this.destroyed === this.levelOfDestructionEnum.WHOLESHIPDESTROYED);
+  constructor (shipId) {
+    super('h', 'h', 'hitShipPart', false, shipId);
   }
+}
 
+class DestroyedShipPart extends ShipPart {
   /**
-   * Checks if the ship part is intact
-   * @return {Boolean} True if the field is intact
+   * Destroyed ship part constructor
+   * @param  {Number} shipId ShipId
    */
-  isIntact () {
-    return this.destroyed === this.levelOfDestructionEnum.INTACT;
-  }
-
-  /**
-   * Changes the status of the field to destroyed
-   */
-  destroy () {
-    super.setClickable(false);
-    this.destroyed = this.levelOfDestructionEnum.DESTROYED;
-  }
-
-  /**
-   * Changes the status of the field to 'wholeShipDestroyed'
-   */
-  setWholeShipDestroyed () {
-    super.setClickable(false);
-    this.destroyed = this.levelOfDestructionEnum.WHOLESHIPDESTROYED;
+  constructor (shipId) {
+    super('d', 'd', 'destroyedShipPart', false, shipId);
   }
 }
 
