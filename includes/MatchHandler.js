@@ -89,7 +89,7 @@ class MatchHandler {
 
   /**
    * Handles when a player clicks on his opponents game field
-   * @param {Number} socketId socketId
+   * @param {String} socketId socketId
    * @param {Number} fieldId Index of the game field array where the player clicked
    * @return {Boolean} Return true if the turn ended the game
    */
