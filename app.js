@@ -32,7 +32,7 @@ io.sockets.on('connection', (socket) => {
     }
   });
 
-  socket.on('playerIsReady', (data) => {
+  socket.on('playerIsReady', () => {
     if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
       gameHandler.getMatch(socket.id).playerIsReady(socket.id);
     }
