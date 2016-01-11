@@ -25,7 +25,7 @@ module.exports = function(grunt) {
       },
       test: {
         files: ['<%= mochaTest.test.src %>'],
-        tasks: ['mochaTest']
+        tasks: ['run_node', 'mochaTest', 'stop_node']
       }
     },
     mochaTest: {
