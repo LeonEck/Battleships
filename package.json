@@ -27,6 +27,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jsdoc": "^1.1.0",
     "grunt-mocha-test": "^0.12.7",
+    "grunt-run-node": "^0.1.3",
     "mocha": "^2.3.4",
     "socket.io-client": "^1.3.7"
   }

@@ -40,6 +40,14 @@ module.exports = function(grunt) {
           destination: 'doc'
         }
       }
+    },
+    run_node: {
+      start: {
+        files: { src: [ 'app.js'] }
+      }
+    },
+    stop_node: {
+      stop: {}
     }
   });
 
@@ -48,10 +56,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-run-node');
 
   grunt.registerTask('default', ['uglify']);
   grunt.registerTask('hint', ['jshint']);
-  grunt.registerTask('test', ['mochaTest']);
+  grunt.registerTask('test', ['run_node', 'mochaTest', 'stop_node']);
   grunt.registerTask('doc', ['jsdoc']);
 
 };
