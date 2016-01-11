@@ -23,6 +23,22 @@ class GameField {
   }
 
   /**
+   * Takes in a field id from a flat array and checks if it is a valid
+   * coordinate
+   * @param  {*}  fieldId Given field id to test
+   * @return {Boolean}         True when the fieldId is valid
+   */
+  isValidCoordinate (fieldId) {
+    if (!isNaN(parseFloat(fieldId)) && isFinite(fieldId)) {
+      if (fieldId >= 0 && fieldId < (this.size * this.size)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Returns if the game field can not be changed any more
    * @return {Boolean} True if the game field is locked an therefore can not
    * be changed any more

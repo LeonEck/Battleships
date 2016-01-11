@@ -11,6 +11,32 @@ describe('GameField Test', () => {
     gameField = new GameField(10);
   });
 
+  describe('isValidCoordinate', () => {
+    it('0 => true', () => {
+      assert.strictEqual(gameField.isValidCoordinate(0), true);
+    });
+
+    it('99 => true', () => {
+      assert.strictEqual(gameField.isValidCoordinate(99), true);
+    });
+
+    it('"1" => true', () => {
+      assert.strictEqual(gameField.isValidCoordinate('1'), true);
+    });
+
+    it('-1 => false', () => {
+      assert.strictEqual(gameField.isValidCoordinate(-1), false);
+    });
+
+    it('100 => false', () => {
+      assert.strictEqual(gameField.isValidCoordinate(100), false);
+    });
+
+    it('"a" => false', () => {
+      assert.strictEqual(gameField.isValidCoordinate('a'), false);
+    });
+  });
+
   describe('isLocked & lock', () => {
     it('should return true when the game field is locked', () => {
       gameField.lock();

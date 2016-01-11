@@ -101,6 +101,10 @@ class MatchHandler {
     // Get a reference for the opponent game field
     let affectedGameField = this._getOpponentGameField(socketId);
 
+    if(!affectedGameField.isValidCoordinate(fieldId)) {
+      return;
+    }
+
     if (!affectedGameField.isClickableField(fieldId)) {
       return;
     }
