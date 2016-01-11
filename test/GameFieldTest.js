@@ -7,12 +7,6 @@ describe('GameField Test', () => {
 
   let gameField;
 
-  /**
-   * A valid game field represented as a flat array for testing
-   * @type {Array}
-   */
-  const testFlatArrayGameField = ['x9', 'x9', 'x9', 'o', 'x5', 'o', 'o', 'x3', 'o', 'o', 'o', 'o', 'o', 'o', 'x5', 'o', 'o', 'x3', 'o', 'x4', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'x4', 'o', 'o', 'x7', 'o', 'o', 'o', 'o', 'o', 'o', 'x4', 'x6', 'o', 'x7', 'o', 'o', 'o', 'o', 'o', 'o', 'x4', 'x6', 'o', 'x7', 'o', 'o', 'x0', 'o', 'o', 'o', 'x4', 'x6', 'o', 'x7', 'o', 'o', 'x0', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'x2', 'x1', 'x1', 'x1', 'x1', 'o', 'x8', 'x8', 'x8', 'o', 'x2'];
-
   beforeEach(() => {
     gameField = new GameField(10);
   });
@@ -27,31 +21,13 @@ describe('GameField Test', () => {
       assert.strictEqual(gameField.isLocked(), false, 'Game field is not locked');
     });
   });
-
-  describe('Game field generation', () => {
-    it('should generate a valid game field', () => {
-      gameField.generateGameField();
-      assert.strictEqual(gameField.isValidGameField(gameField.makeFlatArray()), true, 'Generated game field is valid');
-    });
-  });
-
-  describe('isValidGameField', () => {
-    it('should return true for a valid game field', () => {
-      assert.strictEqual(gameField.isValidGameField(testFlatArrayGameField), true, 'Given game field is valid');
-    });
-
-    it('should return false for a not valid game field', () => {
-      let testInvalidGameField = testFlatArrayGameField.splice();
-      testInvalidGameField[0] = 'asd';
-      assert.strictEqual(gameField.isValidGameField(testInvalidGameField), false, 'Game field invalid');
-    });
-  });
-
+});
+/*
   describe('loadFlatArray & makeFlatArray', () => {
     it('should successfully load in a flat array and return the same when requested with makeFlatArray', () => {
       gameField.loadFlatArray(testFlatArrayGameField);
       const returnValue = gameField.makeFlatArray();
-      assert.deepEqual(testFlatArrayGameField, returnValue, 'Input and output arrays should be the same');
+      assert.deepEqual(testFlatArrayGameFieldWithoutIds, returnValue, 'Output should not contain ids');
     });
   });
 
@@ -172,7 +148,7 @@ describe('GameField Test', () => {
   describe('makeFlatArray', () => {
     it('should generate a flat array', () => {
       gameField.loadFlatArray(testFlatArrayGameField);
-      assert.deepEqual(gameField.makeFlatArray(), testFlatArrayGameField, 'Correctly created a flat array');
+      assert.deepEqual(gameField.makeFlatArray(), testFlatArrayGameFieldWithoutIds, 'Correctly created a flat array');
     });
   });
 
@@ -199,5 +175,4 @@ describe('GameField Test', () => {
       assert.deepEqual(gameField.makeAnonymousFlatArray(), expectedValue, 'Correctly created an anonymous flat array showing fully destroyed ship parts');
     });
   });
-
-});
+*/

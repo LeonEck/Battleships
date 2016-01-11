@@ -11,7 +11,7 @@ let app = express();
 let server = require("http").createServer(app);
 let io = require("socket.io").listen(server);
 
-server.listen(8000);
+server.listen(8002);
 
 describe('MatchHandler Test', () => {
 
@@ -43,3 +43,5 @@ describe('MatchHandler Test', () => {
   });
 
 });
+
+server.close();
