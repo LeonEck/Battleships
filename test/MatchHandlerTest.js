@@ -21,7 +21,7 @@ describe('MatchHandler Test', () => {
     matchHandler = new MatchHandler('abc', io);
   });
 
-  describe('isFull', () => {
+  describe('isFull & addPlayer', () => {
     it('should return true when a new player was added', () => {
       matchHandler.addPlayer("123");
       assert.strictEqual(matchHandler.isFull(), true, 'Game has two players');
