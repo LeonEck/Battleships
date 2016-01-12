@@ -60,7 +60,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['uglify']);
   grunt.registerTask('hint', ['jshint']);
-  grunt.registerTask('test', ['run_node', 'mochaTest', 'stop_node']);
+  grunt.registerTask('test', ['jshint', 'run_node', 'mochaTest', 'stop_node']);
   grunt.registerTask('doc', ['jsdoc']);
 
 };
