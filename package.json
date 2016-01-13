@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "app.js",
   "scripts": {
-    "postinstall": "node_modules/.bin/bower install",
+    "postinstall": "node_modules/.bin/bower install --config.interactive=false",
     "start": "node app.js",
     "test": "node_modules/.bin/grunt test",
     "doc": "node_modules/.bin/grunt doc"
