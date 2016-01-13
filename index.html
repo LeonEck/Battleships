@@ -19,7 +19,7 @@
   <body>
   <div class="container-fluid">
     <div class="row top20">
-      <div class="col-xs-12">
+      <div class="col-xs-12 text-center">
         <div id="gameWasClosedAlert" class="alert alert-warning" role="alert" hidden>Your game was closed. You can search for a new game if you want.</div>
         <div id="gameWonAlert" class="alert alert-success" role="alert" hidden>You won the game! You can search for a new game if you want.</div>
         <div id="gameLostAlert" class="alert alert-danger" role="alert" hidden>You lost the game. You can search for a new game if you want.</div>
@@ -60,7 +60,7 @@
         </div>
         <div class="col-xs-2"></div>
       </div>
-      <div class="footer navbar-fixed-bottom text-center bottom5">
+      <div class="row top60 text-center">
         Created by Leon Eck
         <br>
         <a href="https://github.com/LeonEck/Battleships" target="_blank">Source Code</a>
@@ -68,14 +68,23 @@
     </div>
     <div id="gameContainer" hidden>
     	<div class="row text-center">
-        <div class="col-lg-6">
-          <div id="myTitle" class="h3">My game field</div>
+        <div class="col-lg-6 bottom20">
+          <div class="well wellNoMargins">
+            <div id="myTitle" class="h3 bottom20">My game field</div>
+          </div>
           <div id="myGameField" class="gameField"></div>
           <button id="getRandomGameFieldButton" class="btn btn-primary top20">Get a random game field</button>
-          <button id="readyToPlayButton" class="btn btn-danger top20 left20">Ready to play...</button>
+          <button id="readyToPlayButton" class="btn btn-danger top20">Ready to play...</button>
+          <div id="preGameInstructions" class="panel panel-default top20">
+            <div class="panel-body">
+              Generate new game fields or click the "Ready to play..." button and wait for your opponent to do the same.
+            </div>
+          </div>
         </div>
         <div id="opponentDisplay" class="col-lg-6" hidden>
-          <div id="opponentTitle" class="h3">Opponents game field</div>
+          <div id="opponentTitleWell" class="well wellNoMargins">
+            <div id="opponentTitle" class="h3 bottom20">Opponents game field</div>
+          </div>
           <div id="opponentGameField" class="gameField"></div>
           <div id="opponentsShips" class="top20" hidden>
             <div class="h4">Opponents ships</div>
@@ -96,6 +105,11 @@
             </div>
             <div>
               <img src="img/Ship5Intact.png" class="shipMapKey" shipId="9">
+            </div>
+            <div>
+              <button id="legendButtonPopover" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-list" aria-hidden="true"></span> Legend
+              </button>
             </div>
           </div>
         </div>

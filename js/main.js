@@ -3,6 +3,19 @@
 $(document).ready(function () {
   var socket = io.connect();
 
+  $('#legendButtonPopover').popover({
+    html: true,
+    trigger: 'focus',
+    placement: 'top',
+    content: function () {
+      return '<button class="btn legendButton water-field left20" disabled></button> Water'
+        + '<button class="btn legendButton ship-field left20" disabled></button> Ship'
+        + '<button class="btn legendButton missed-field left20" disabled></button> Missed'
+        + '<button class="btn legendButton hit-field left20" disabled></button> Hit'
+        + '<button class="btn legendButton destroyed-field left20" disabled></button> Destroyed';
+    }
+  });
+
   $(document).on('click', '#searchForGameButton', function () {
     $('#searchForGameButton').text('Searching for game...');
     socket.emit('searchingForGame', true);
@@ -16,19 +29,21 @@ $(document).ready(function () {
     socket.emit('playerIsReady', true);
   });
 
-  $(document).on('click', '#opponentGameField .gameFieldSquare', function () {
+  $(document).on('click', '#opponentGameField .fieldButton', function () {
     socket.emit('clickOnOpponentGameField', $(this).attr('squareNumber'));
   });
 
   socket.on('preGame', function () {
     $('#lobbyContainer').hide();
     hideAllAlerts();
+    resetGameFieldAppearance();
     generateGameFields();
     $('#getRandomGameFieldButton').show();
     $('#readyToPlayButton').text('Ready to play...');
     $('#readyToPlayButton').removeClass('btn-success');
     $('#readyToPlayButton').addClass('btn-danger');
     $('#readyToPlayButton').show();
+    $('#preGameInstructions').show();
     $('#gameContainer').show();
     $('#opponentDisplay').hide();
     $('#opponentsShips').hide();
@@ -38,6 +53,7 @@ $(document).ready(function () {
     $('#readyToPlayButton').removeClass('btn-danger');
     $('#readyToPlayButton').addClass('btn-success');
     $('#readyToPlayButton').text('Waiting for opponent...');
+    $('#preGameInstructions').hide();
     showAlert('waitingForOpponent');
   });
 
@@ -100,33 +116,37 @@ function generateGameFields () {
   for(var j = 0; j < 10; j++) {
     gameFieldHtml += '<tr><td class="gameFieldHeaderSquare">' + characters[j] + '</td>';
     for(var k = 0; k < 10; k++) {
-      gameFieldHtml += '<td class="gameFieldSquare" squareNumber="' + squareCount + '"></td>';
+      gameFieldHtml += '<td class="gameFieldSquare"><button class="btn fieldButton" squareNumber="' + squareCount + '"></button></td>';
       squareCount++;
     }
     gameFieldHtml += '</tr>';
   }
   gameFieldHtml += '</table>';
   $('.gameField').html(gameFieldHtml);
+  $('#myGameField button').prop('disabled', true);
 }
 
 function fillGameField (targetGameField, data) {
-  $('#' + targetGameField + ' .shipPart').removeClass('shipPart');
   for(var i = 0; i < data.length; i++) {
     switch (data[i]) {
+      case 'w':
+        $('#' + targetGameField + ' .fieldButton[squareNumber=' + i + ']').css('background-color', '#2278BF');
+        break;
+
       case 'i':
-        $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('shipPart');
+        $('#' + targetGameField + ' .fieldButton[squareNumber=' + i + ']').css('background-color', '#333');
         break;
 
       case 'h':
-        $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('shipPartHit');
+        $('#' + targetGameField + ' .fieldButton[squareNumber=' + i + ']').css('background-color', '#F44336').addClass('disabled').css('cursor', 'default');
         break;
 
       case 'm':
-        $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('missed');
+        $('#' + targetGameField + ' .fieldButton[squareNumber=' + i + ']').css('background-color', '#DDD').addClass('disabled').css('cursor', 'default');
         break;
 
       case 'd':
-        $('#' + targetGameField + ' .gameFieldSquare[squareNumber=' + i + ']').addClass('fullyDestroyedShip');
+        $('#' + targetGameField + ' .fieldButton[squareNumber=' + i + ']').css('background-color', '#4CAF50').addClass('disabled').css('cursor', 'default');
         break;
 
       default:
@@ -137,18 +157,21 @@ function fillGameField (targetGameField, data) {
 
 function turnDisplay (isItMyTurn) {
   if (isItMyTurn) {
-    $('#myTitle').addClass('text-danger');
-    $('#myTitle').text('Your Turn *** My game field *** Your Turn');
-    $('#opponentTitle').text('Opponents game field');
-    $('#opponentTitle').removeClass('text-danger');
+    $('#opponentTitle').text('Your Turn *** Opponents game field *** Your Turn');
+    $('#opponentTitleWell').css('background', 'rgba(92, 184, 92, 0.8)');
     $('#opponentGameField > table').addClass('tableRedBorder');
+    $('.fieldButton').removeClass('cursor-default');
   } else {
-    $('#myTitle').removeClass('text-danger');
     $('#opponentTitle').text('Opponents Turn - Opponents game field - Opponents Turn');
-    $('#myTitle').text('My game field');
-    $('#opponentTitle').addClass('text-danger');
+    $('#opponentTitleWell').css('background', 'rgba(217, 83, 79, 0.59)');
     $('#opponentGameField > table').removeClass('tableRedBorder');
+    $('.fieldButton').addClass('cursor-default');
   }
+}
+
+function resetGameFieldAppearance () {
+  $('#opponentTitle').text('Opponents game field');
+  $('#opponentGameField > table').removeClass('tableRedBorder');
 }
 
 function showAlert (alertToShow) {
