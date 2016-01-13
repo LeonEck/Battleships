@@ -5,6 +5,7 @@
 
 "use strict";
 
+let logger = require('./Logger');
 let MatchHandler = require("./MatchHandler");
 
 class GameHandler {
@@ -44,6 +45,11 @@ class GameHandler {
 					this.matches[i].closeMatch();
 				}
 				this.matches.splice(i, 1);
+				if (aborted) {
+					logger.info('Client(' + socketId + ') game was aborted');
+				} else {
+					logger.info('Client(' + socketId + ') game was closed because someone won');
+				}
 				return;
 			}
 		}

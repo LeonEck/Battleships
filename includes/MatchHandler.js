@@ -1,5 +1,6 @@
 'use strict';
 
+let logger = require('./Logger');
 let GameField = require('./GameField');
 
 class MatchHandler {
@@ -163,6 +164,7 @@ class MatchHandler {
     this.io.sockets.to(this.playerOne).emit('gameField', this.gameFieldOne.makeFlatArray());
     this.io.sockets.to(this.playerTwo).emit('preGame', true);
     this.io.sockets.to(this.playerTwo).emit('gameField', this.gameFieldTwo.makeFlatArray());
+    logger.info('Match of ' + this.playerOne + ' & ' + this.playerTwo + ' is now in pre game');
   }
 
   /**
@@ -172,6 +174,7 @@ class MatchHandler {
     this.io.sockets.to(this.playerOne).emit('gameIsStarting', true);
     this.io.sockets.to(this.playerTwo).emit('gameIsStarting', true);
     this._sendMatchItsInformations();
+    logger.info('Match of ' + this.playerOne + ' & ' + this.playerTwo + ' is starting with the game phase');
   }
 
   /**

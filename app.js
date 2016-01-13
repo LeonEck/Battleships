@@ -1,4 +1,5 @@
 'use strict';
+let logger = require('./includes/Logger');
 let GameHandler = require('./includes/GameHandler');
 
 let express = require('express');
@@ -18,22 +19,28 @@ let gameHandler = new GameHandler(io);
 
 io.sockets.on('connection', (socket) => {
 
+  logger.info('Client(' + socket.id + ') connected from: ' + socket.request.connection.remoteAddress);
+
   socket.on('searchingForGame', () => {
+    logger.info('Client(' + socket.id + ') is searching for a game');
     gameHandler.playerSearchingForGame(socket.id);
   });
 
 	socket.on('disconnect', () => {
-		gameHandler.closeMatch(socket.id, true);
+    logger.info('Client(' + socket.id + ') disconnected from: ' + socket.request.connection.remoteAddress);
+    gameHandler.closeMatch(socket.id, true);
 	});
 
   socket.on('getRandomGameField', () => {
     if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
       gameHandler.getMatch(socket.id).generateNewGameFieldForPlayer(socket.id);
+      logger.debug('Client(' + socket.id + ') got send a new game field');
     }
   });
 
   socket.on('playerIsReady', () => {
     if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
+      logger.debug('Client(' + socket.id + ') is ready to play');
       gameHandler.getMatch(socket.id).playerIsReady(socket.id);
     }
   });
