@@ -1,6 +1,6 @@
 # Battleships
 
-Schiffe versenken soll als 2 Spieler online Web-Spiel umgesetzt werden.
+Schiffe versenken als Web-Spiel.
 
 ## Installation
 
