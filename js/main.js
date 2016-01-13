@@ -8,11 +8,11 @@ $(document).ready(function () {
     trigger: 'focus',
     placement: 'top',
     content: function () {
-      return '<button class="btn legendButton water-field left20" disabled></button> Water'
-        + '<button class="btn legendButton ship-field left20" disabled></button> Ship'
-        + '<button class="btn legendButton missed-field left20" disabled></button> Missed'
-        + '<button class="btn legendButton hit-field left20" disabled></button> Hit'
-        + '<button class="btn legendButton destroyed-field left20" disabled></button> Destroyed';
+      return '<button class="btn legendButton water-field left20" disabled></button> Water' +
+        '<button class="btn legendButton ship-field left20" disabled></button> Ship' +
+        '<button class="btn legendButton missed-field left20" disabled></button> Missed' +
+        '<button class="btn legendButton hit-field left20" disabled></button> Hit' +
+        '<button class="btn legendButton destroyed-field left20" disabled></button> Destroyed';
     }
   });
 
