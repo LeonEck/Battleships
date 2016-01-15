@@ -1,5 +1,7 @@
 # Battleships
 
+[![Build Status](https://travis-ci.org/LeonEck/Battleships.svg?branch=master)](https://travis-ci.org/LeonEck/Battleships)
+
 Schiffe versenken als Web-Spiel.
 
 ## Spielen
