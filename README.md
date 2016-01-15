@@ -2,6 +2,10 @@
 
 Schiffe versenken als Web-Spiel.
 
+## Spielen
+
+Jetzt spielen: <http://leoneck.de:8000>
+
 ## Installation
 
 ### Vorbereitung
