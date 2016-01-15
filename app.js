@@ -19,7 +19,7 @@ let gameHandler = new GameHandler(io);
 
 io.sockets.on('connection', (socket) => {
 
-  logger.info('Client(' + socket.id + ') connected from: ' + socket.request.connection.remoteAddress);
+  logger.info('Client(' + socket.id + ') connected');
 
   socket.on('searchingForGame', () => {
     logger.info('Client(' + socket.id + ') is searching for a game');
@@ -27,7 +27,7 @@ io.sockets.on('connection', (socket) => {
   });
 
 	socket.on('disconnect', () => {
-    logger.info('Client(' + socket.id + ') disconnected from: ' + socket.request.connection.remoteAddress);
+    logger.info('Client(' + socket.id + ') disconnected');
     gameHandler.closeMatch(socket.id, true);
 	});
 
