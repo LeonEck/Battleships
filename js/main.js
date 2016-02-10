@@ -5,7 +5,7 @@ $(document).ready(function () {
 
   $('#legendButtonPopover').popover({
     html: true,
-    trigger: 'focus',
+    trigger: 'click focus',
     placement: 'top',
     content: function () {
       return '<button class="btn legendButton water-field left20" disabled></button> Water' +
