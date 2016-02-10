@@ -31,6 +31,14 @@ io.sockets.on('connection', (socket) => {
     gameHandler.closeMatch(socket.id, true);
 	});
 
+  socket.on('chatMessage', (message) => {
+    if (!message || message.length === 0) {
+      return;
+    }
+    io.emit('newChatMessage', message);
+    logger.debug('Client(' + socket.id + ') send this chat message: ' + message);
+  });
+
   socket.on('getRandomGameField', () => {
     if (gameHandler.isThisPlayerInAnyMatch(socket.id)) {
       gameHandler.getMatch(socket.id).generateNewGameFieldForPlayer(socket.id);

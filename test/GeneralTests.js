@@ -102,4 +102,16 @@ describe('Play test', () => {
 
   });
 
+  describe('Chat testing', () => {
+
+    it('a message from one client should be send to another', (done) => {
+      clientOne.emit('chatMessage', 'Test message');
+      clientTwo.on('newChatMessage', (message) => {
+        assert.strictEqual(message, 'Test message');
+        done();
+      });
+    });
+
+  });
+
 });

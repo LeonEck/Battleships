@@ -21,6 +21,17 @@ $(document).ready(function () {
     socket.emit('searchingForGame', true);
   });
 
+  $(document).on('keypress', '#chatMessageInput', function (event) {
+    // Check if 'Enter/Return' was pressed while in the chat input field
+    if (event.which === 13) {
+      sendNewChatMessage();
+    }
+  });
+
+  $(document).on('click', '#chatSendButton', function () {
+    sendNewChatMessage();
+  });
+
   $(document).on('click', '#getRandomGameFieldButton', function () {
     socket.emit('getRandomGameField', true);
   });
@@ -31,6 +42,11 @@ $(document).ready(function () {
 
   $(document).on('click', '#opponentGameField .fieldButton', function () {
     socket.emit('clickOnOpponentGameField', $(this).attr('squareNumber'));
+  });
+
+  socket.on('newChatMessage', function (message) {
+    $('#chatTextArea').val($('#chatTextArea').val() + message + '\n');
+    $('#chatTextArea').scrollTop($('#chatTextArea')[0].scrollHeight);
   });
 
   socket.on('preGame', function () {
@@ -92,6 +108,11 @@ $(document).ready(function () {
       returnToLobbyWithAlert('gameLost');
     }
   });
+
+  function sendNewChatMessage () {
+    socket.emit('chatMessage', $('#chatMessageInput').val());
+    $('#chatMessageInput').val('');
+  }
 });
 
 function parseShipMapArray (data) {
