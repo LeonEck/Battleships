@@ -2,18 +2,29 @@
 let logger = require('./includes/Logger');
 let GameHandler = require('./includes/GameHandler');
 
+let https = require('https');
+let fs = require('fs');
+
 let express = require('express');
 let app = express();
-let server = require('http').createServer(app);
+
+let privateKey = fs.readFileSync( 'cert.key' );
+let certificate = fs.readFileSync( 'cert.pem');
+
+let server = https.createServer({
+  key: privateKey,
+  cert: certificate
+}, app);
+
 let io = require('socket.io').listen(server);
 
 server.listen(8000);
 
+app.use(express.static(__dirname + '/public/'));
+
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
 });
-
-app.use(express.static(__dirname + '/'));
 
 let gameHandler = new GameHandler(io);
 
