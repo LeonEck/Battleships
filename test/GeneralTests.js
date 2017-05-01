@@ -1,11 +1,12 @@
-"use strict";
+// Tests are deactivated because of move to ssl
+/*"use strict";
 
 let assert = require('assert');
 let io = require('socket.io-client');
 
-// Tests are deactivated because of move to ssl
 
-/*describe('Connection testing', () => {
+
+describe('Connection testing', () => {
 
   it('should be able to connect to the server', (done) => {
     let clientOne = io.connect('http://localhost:8000', {
