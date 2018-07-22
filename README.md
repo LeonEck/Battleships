@@ -4,10 +4,6 @@
 
 Schiffe versenken als Web-Spiel.
 
-## Spielen
-
-Jetzt spielen: <http://leoneck.de:8000>
-
 ## Installation
 
 ### Vorbereitung
@@ -133,9 +129,6 @@ Die Seite ist nun über Port 8000 erreichbar <http://localhost:8000>
 
 
 ## Entwurf
-
-### Klassendiagramm
-![Klassendiagramm](http://leoneck.de/raw/Battleships/Klassendiagramm.png "Klassendiagramm")
 
 ## Teststrategie
 
